@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script src="config.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ficha del Paciente</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 1rem; height: 56px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
+    .btn-volver { background: none; border: none; font-size: 22px; cursor: pointer; color: #667eea; padding: 4px 8px; }
+    .topbar-titulo { font-size: 15px; font-weight: 600; color: #2d3748; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .btn-wa { background: #25d366; color: #fff; border: none; padding: 7px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+    .btn-tc { background: #128c7e; color: #fff; border: none; padding: 7px 12px; border-radius: 8px; font-size: 13px; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+
+    .contenido { max-width: 760px; margin: 0 auto; padding: 1rem 1rem 4rem; }
+
+    /* ── CABECERA ── */
+    .paciente-header { border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 1.1rem; overflow: hidden; background: #fff; }
+    .ph-enc { padding: 1rem 1.1rem .9rem; display: flex; align-items: center; gap: 13px; }
+    .ph-enc.varon  { background: linear-gradient(135deg, #63b3ed 0%, #2b6cb0 100%); }
+    .ph-enc.mujer  { background: linear-gradient(135deg, #f687b3 0%, #b83280 100%); }
+    .ph-enc.neutro { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .ph-avatar-wrap { position: relative; cursor: pointer; flex-shrink: 0; }
+    .ph-avatar { width: 52px; height: 52px; border-radius: 50%; background: rgba(255,255,255,.25); color: #fff; font-weight: 700; font-size: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid rgba(255,255,255,.4); overflow: hidden; }
+    .ph-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .ph-avatar-edit { position: absolute; bottom: 0; right: 0; background: rgba(0,0,0,.45); color: #fff; border-radius: 50%; width: 18px; height: 18px; font-size: 9px; display: flex; align-items: center; justify-content: center; }
+    .ph-nombre { font-size: 18px; font-weight: 700; color: #fff; line-height: 1.2; }
+    .ph-meta { font-size: 13px; color: rgba(255,255,255,.85); margin-top: 3px; }
+    .ph-fijos { background: #fff; padding: .7rem 1.1rem .65rem; display: flex; flex-direction: column; gap: 6px; border-top: 1px solid rgba(0,0,0,.07); }
+    .ph-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a5568; }
+    .ph-row-icon { width: 20px; text-align: center; flex-shrink: 0; font-size: 14px; }
+    .ph-motivo-chip { background: #ebf4ff; border: 1px solid #bee3f8; color: #2c5282; border-radius: 6px; padding: 2px 9px; font-size: 12px; font-weight: 500; }
+    .ph-toggle-bar { display: flex; align-items: center; justify-content: center; gap: 6px; padding: .5rem; background: #fafbfc; border-top: 1px solid #f0f4f8; font-size: 11px; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: .06em; cursor: pointer; border-radius: 0 0 14px 14px; user-select: none; }
+    .ph-toggle-bar:hover { background: #f7f8fb; }
+    .ph-toggle-bar.open { border-radius: 0; }
+    .ph-arrow { display: inline-block; transition: transform .25s; font-size: 10px; }
+    .ph-toggle-bar.open .ph-arrow { transform: rotate(180deg); }
+    .ph-expandable { max-height: 0; overflow: hidden; transition: max-height .35s ease; background: #fff; }
+    .ph-expandable.open { max-height: 700px; }
+    .ph-expand-inner { padding: .9rem 1.1rem 1.1rem; border-top: 1px solid #f0f4f8; }
+    .ph-bloque { margin-bottom: 14px; }
+    .ph-bloque:last-of-type { margin-bottom: 0; }
+    .ph-bloque-titulo { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #cbd5e0; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #f7fafc; }
+    .ph-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+    .ph-full { grid-column: 1/-1; }
+    .ph-lbl { font-size: 11px; color: #a0aec0; text-transform: uppercase; letter-spacing: .04em; margin-bottom: 2px; }
+    .ph-val { font-size: 13px; color: #2d3748; font-weight: 500; }
+    .btn-editar-header { width: 100%; margin-top: 14px; padding: 10px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 10px; font-size: 13px; color: #667eea; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; }
+    .btn-editar-header:hover { background: #ebf4ff; border-color: #667eea; }
+
+    /* ── SECCIÓN GENÉRICA ── */
+    .seccion { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 1.1rem; overflow: hidden; }
+    .sec-header { display: flex; align-items: center; justify-content: space-between; padding: .85rem 1.1rem .7rem; }
+    .sec-titulo { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: #a0aec0; display: flex; align-items: center; gap: 6px; }
+
+    /* ── ANTECEDENTES ── */
+    .ant-items { padding: 0 1.1rem .85rem; display: flex; flex-direction: column; gap: 10px; }
+    .ant-row { display: flex; align-items: flex-start; gap: 10px; }
+    .ant-icon { font-size: 15px; width: 22px; text-align: center; flex-shrink: 0; margin-top: 1px; }
+    .ant-info { flex: 1; }
+    .ant-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: #a0aec0; margin-bottom: 3px; }
+    .ant-val { font-size: 13px; color: #2d3748; font-weight: 500; line-height: 1.4; }
+    .chip { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .chip-rojo { background: #fed7d7; color: #c53030; }
+    .chip-gris { background: #f7fafc; color: #a0aec0; border: 1px solid #e2e8f0; }
+    .chip-azul { background: #bee3f8; color: #2c5282; }
+    .vac-badge { display: inline-flex; align-items: center; gap: 4px; padding: 4px 11px; border-radius: 20px; font-size: 12px; font-weight: 600; cursor: pointer; border: none; }
+    .vac-badge.completa  { background: #c6f6d5; color: #276749; }
+    .vac-badge.incompleta { background: #feebc8; color: #c05621; }
+    .ant-toggle { display: flex; align-items: center; justify-content: center; gap: 6px; padding: .5rem; background: #fafbfc; border-top: 1px solid #f0f4f8; font-size: 11px; font-weight: 700; color: #a0aec0; text-transform: uppercase; letter-spacing: .06em; cursor: pointer; user-select: none; }
+    .ant-toggle:hover { background: #f7f8fb; }
+    .ant-toggle .ant-arrow { display: inline-block; transition: transform .25s; font-size: 10px; }
+    .ant-toggle.open .ant-arrow { transform: rotate(180deg); }
+    .ant-expandable { max-height: 0; overflow: hidden; transition: max-height .35s ease; }
+    .ant-expandable.open { max-height: 700px; }
+    .ant-expand-inner { padding: .9rem 1.1rem 1.1rem; border-top: 1px solid #f0f4f8; display: flex; flex-direction: column; gap: 10px; }
+    .campo { width: 100%; padding: 8px 11px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; color: #2d3748; outline: none; background: #f7fafc; }
+    .campo:focus { border-color: #667eea; background: #fff; }
+    textarea.campo { resize: vertical; min-height: 65px; }
+    .campo-label { font-size: 11px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; display: block; }
+    .campo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    @media (max-width: 480px) { .campo-grid { grid-template-columns: 1fr; } }
+    .autosave-ind { font-size: 11px; display: flex; align-items: center; gap: 4px; height: 16px; transition: opacity .3s; }
+    .autosave-ind.guardando { color: #a0aec0; }
+    .autosave-ind.guardado  { color: #38a169; }
+    .autosave-ind.oculto    { opacity: 0; pointer-events: none; }
+
+    /* ── CRECIMIENTO ── */
+    .crec-metricas { display: grid; grid-template-columns: repeat(4, 1fr); border-top: 1px solid #f0f4f8; }
+    .crec-met { padding: .65rem .4rem; text-align: center; border-right: 1px solid #f0f4f8; }
+    .crec-met:last-child { border-right: none; }
+    .crec-met-lbl { font-size: 10px; font-weight: 600; text-transform: uppercase; color: #a0aec0; margin-bottom: 4px; }
+    .crec-met-val { font-size: 17px; font-weight: 700; color: #2d3748; }
+    .crec-met-unit { font-size: 10px; color: #a0aec0; }
+    .crec-pct { display: inline-block; font-size: 11px; font-weight: 600; padding: 2px 7px; border-radius: 10px; margin-top: 3px; }
+    .pct-v { background: #c6f6d5; color: #276749; }
+    .pct-a { background: #fefcbf; color: #744210; }
+    .pct-r { background: #fed7d7; color: #c53030; }
+    .crec-barra-wrap { padding: .4rem 1.1rem .65rem; }
+    .crec-barra-top { display: flex; justify-content: space-between; font-size: 11px; color: #a0aec0; margin-bottom: 4px; }
+    .crec-barra { height: 6px; background: linear-gradient(90deg, #fc8181 0%, #68d391 30%, #68d391 70%, #fc8181 100%); border-radius: 3px; position: relative; }
+    .crec-needle { position: absolute; top: -3px; width: 12px; height: 12px; background: #667eea; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transform: translateX(-50%); }
+    .crec-barra-bot { display: flex; justify-content: space-between; font-size: 10px; color: #cbd5e0; margin-top: 2px; }
+    .btn-crec { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; padding: .65rem; background: #f7fafc; border: none; border-top: 1px solid #f0f4f8; font-size: 13px; font-weight: 600; color: #667eea; cursor: pointer; }
+    .btn-crec:hover { background: #ebf4ff; }
+    .btn-medir { display: flex; align-items: center; gap: 5px; padding: 5px 11px; background: #667eea; color: #fff; border: none; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-medir:hover { background: #5a67d8; }
+
+    /* ── CONSULTA NUEVA ── */
+    .consulta-nueva { border: 2px solid #667eea; border-radius: 12px; padding: 1.1rem; background: #f8f7ff; margin-bottom: 1.1rem; }
+    .consulta-nueva-titulo { font-size: 13px; font-weight: 700; color: #667eea; margin-bottom: .9rem; display: flex; align-items: center; gap: 8px; }
+    .btn-guardar { background: #667eea; color: #fff; border: none; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; margin-top: .9rem; }
+    .btn-guardar:hover { background: #5a67d8; }
+    .borrador-banner { background: #fefcbf; border: 1px solid #f6e05e; border-radius: 8px; padding: 8px 12px; font-size: 12px; color: #744210; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+    .borrador-banner button { background: none; border: none; color: #c05621; font-size: 12px; cursor: pointer; text-decoration: underline; }
+
+    /* ── HISTORIAL CONSULTAS ── */
+    .consulta-list-item { border-bottom: 1px solid #f0f4f8; }
+    .consulta-list-item:last-child { border-bottom: none; }
+    .consulta-row { display: flex; align-items: center; gap: 8px; padding: .7rem .9rem; cursor: pointer; }
+    .consulta-row:hover { background: #fafbfc; }
+    .consulta-row-fecha { font-size: 11px; font-weight: 700; color: #667eea; white-space: nowrap; min-width: 90px; }
+    .consulta-row-motivo { flex: 1; font-size: 13px; color: #2d3748; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .consulta-row-arrow { font-size: 11px; color: #a0aec0; transition: transform .2s; flex-shrink: 0; }
+    .consulta-row-arrow.open { transform: rotate(90deg); }
+    .btn-menu-cons { background: none; border: none; font-size: 18px; color: #a0aec0; cursor: pointer; padding: 2px 6px; border-radius: 6px; flex-shrink: 0; line-height: 1; }
+    .btn-menu-cons:hover { background: #f7fafc; color: #4a5568; }
+    .consulta-exp { max-height: 0; overflow: hidden; transition: max-height .3s ease; background: #fafbff; }
+    .consulta-exp.open { max-height: 500px; }
+    .consulta-exp-inner { padding: .7rem .9rem .9rem; border-top: 1px solid #eeeeff; display: flex; flex-direction: column; gap: 7px; }
+    .det-bloque { font-size: 13px; color: #4a5568; line-height: 1.5; }
+    .det-lbl { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #a0aec0; margin-bottom: 2px; }
+    .det-medidas { display: flex; gap: 12px; flex-wrap: wrap; }
+    .det-med { background: #f0f4f8; border-radius: 6px; padding: 3px 9px; font-size: 12px; color: #4a5568; }
+
+    /* MENÚ CONTEXTUAL */
+    .ctx-menu { position: fixed; background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; box-shadow: 0 4px 20px rgba(0,0,0,.15); z-index: 1000; min-width: 150px; overflow: hidden; }
+    .ctx-item { padding: 10px 16px; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #2d3748; }
+    .ctx-item:hover { background: #f7fafc; }
+    .ctx-item.danger { color: #c53030; }
+    .ctx-item.danger:hover { background: #fff5f5; }
+
+    /* ── ADJUNTOS ── */
+    .adjuntos-lista { display: flex; flex-direction: column; gap: 8px; padding: 0 1.1rem .9rem; }
+    .adjunto-item { display: flex; align-items: center; gap: 10px; background: #f7fafc; border-radius: 8px; padding: 9px 12px; }
+    .adjunto-icon { font-size: 20px; }
+    .adjunto-info { flex: 1; }
+    .adjunto-nombre { font-size: 13px; font-weight: 500; color: #2d3748; }
+    .adjunto-fecha { font-size: 11px; color: #a0aec0; }
+    .btn-ver { background: #ebf4ff; color: #3182ce; border: none; padding: 5px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; }
+    .upload-btn { display: flex; align-items: center; justify-content: center; gap: 8px; background: #f7fafc; border: 2px dashed #cbd5e0; padding: 13px; border-radius: 10px; font-size: 13px; color: #718096; cursor: pointer; width: 100%; margin: 0 1.1rem .9rem; width: calc(100% - 2.2rem); }
+    .upload-btn:hover { border-color: #667eea; color: #667eea; }
+
+    /* ── DOCUMENTOS ── */
+    .docs-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 0 1.1rem 1.1rem; }
+    @media (max-width: 480px) { .docs-grid { grid-template-columns: 1fr; } }
+    .doc-btn { display: flex; align-items: center; gap: 10px; background: #f7fafc; border: 1px solid #e2e8f0; padding: 11px 13px; border-radius: 10px; font-size: 13px; color: #4a5568; cursor: pointer; }
+    .doc-btn:hover { background: #ebf4ff; border-color: #667eea; color: #667eea; }
+
+    /* ── VISOR IMAGEN ── */
+    .visor-overlay { display: none; position: fixed; inset: 0; background: #000; z-index: 2000; flex-direction: column; }
+    .visor-overlay.open { display: flex; }
+    .visor-top { display: flex; align-items: center; justify-content: space-between; padding: .75rem 1rem; background: rgba(255,255,255,.08); flex-wrap: wrap; gap: 8px; }
+    .visor-titulo { color: #fff; font-size: 14px; font-weight: 600; }
+    .visor-hint { color: rgba(255,255,255,.45); font-size: 11px; }
+    .visor-btns { display: flex; gap: 8px; }
+    .visor-btn { background: rgba(255,255,255,.15); border: none; color: #fff; padding: 6px 13px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+    .visor-btn:hover { background: rgba(255,255,255,.25); }
+    .visor-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; touch-action: none; user-select: none; cursor: crosshair; }
+    .visor-img { max-width: 100%; max-height: 100%; object-fit: contain; pointer-events: none; transition: filter .05s; }
+    .visor-stats { text-align: center; padding: .4rem .5rem; color: rgba(255,255,255,.5); font-size: 11px; background: rgba(255,255,255,.05); }
+
+    /* ── MODAL ── */
+    .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 500; align-items: flex-end; justify-content: center; }
+    .modal-overlay.open { display: flex; }
+    .modal { background: #fff; border-radius: 20px 20px 0 0; width: 100%; max-width: 600px; max-height: 92vh; overflow-y: auto; padding: 1.4rem; }
+    @media (min-width: 600px) { .modal-overlay { align-items: center; } .modal { border-radius: 16px; } }
+    .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; }
+    .modal-titulo { font-size: 17px; font-weight: 700; color: #2d3748; }
+    .btn-cerrar { background: #f7fafc; border: none; width: 32px; height: 32px; border-radius: 8px; font-size: 18px; cursor: pointer; color: #718096; }
+    .modal label { display: block; font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: .05em; margin: 11px 0 4px; }
+    .modal input, .modal textarea, .modal select { width: 100%; padding: 9px 11px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; }
+    .modal input:focus, .modal textarea:focus { border-color: #667eea; }
+    .modal textarea { resize: vertical; min-height: 80px; }
+    .modal-footer { display: flex; gap: 10px; margin-top: 1.1rem; }
+    .btn-cancelar { flex: 1; background: #f7fafc; border: 1px solid #e2e8f0; padding: 11px; border-radius: 10px; font-size: 14px; cursor: pointer; color: #718096; }
+    .btn-confirmar { flex: 2; background: #667eea; color: #fff; border: none; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+    .loading { text-align: center; padding: 1.5rem; color: #a0aec0; font-size: 14px; }
+    .empty { text-align: center; padding: 1.2rem; color: #a0aec0; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <button class="btn-volver" onclick="history.back()">‹</button>
+  <div class="topbar-titulo" id="topbarTitulo">Cargando...</div>
+  <a class="btn-wa" id="btnWa" href="#" target="_blank">📱</a>
+  <a class="btn-tc" id="btnTc" href="#" target="_blank">📹</a>
+</div>
+
+<div class="contenido">
+
+  <!-- CABECERA -->
+  <div class="paciente-header" id="pacienteHeader">
+    <div class="loading">Cargando...</div>
+  </div>
+
+  <!-- ANTECEDENTES -->
+  <div class="seccion" id="seccionAntecedentes">
+    <div class="sec-header">
+      <div class="sec-titulo">🩺 Antecedentes</div>
+      <div id="vacBadge"></div>
+    </div>
+    <div class="ant-items" id="antItems"><div class="loading">Cargando...</div></div>
+    <div class="ant-toggle" id="antToggle" onclick="toggleAntecedentes()">
+      <span class="ant-arrow">▼</span> Ver / Editar antecedentes completos
+    </div>
+    <div class="ant-expandable" id="antExpandable">
+      <div class="ant-expand-inner">
+        <div class="campo-grid">
+          <div><label class="campo-label">Grupo sanguíneo</label>
+            <select class="campo" id="antGrupo">
+              <option value="">—</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+            </select>
+          </div>
+          <div><label class="campo-label">Vacunas</label>
+            <select class="campo" id="antVacunas">
+              <option value="">—</option><option>Al día</option><option>Incompletas</option><option>No</option>
+            </select>
+          </div>
+        </div>
+        <div><label class="campo-label">Alergias conocidas</label>
+          <textarea class="campo" id="antAlergias" placeholder="Penicilina, Polen..." autocomplete="off"></textarea>
+        </div>
+        <div><label class="campo-label">Medicación habitual</label>
+          <textarea class="campo" id="antMedicacion" placeholder="Salbutamol..." autocomplete="off"></textarea>
+        </div>
+        <div><label class="campo-label">Antecedentes familiares</label>
+          <textarea class="campo" id="antFamiliares" placeholder="Diabetes, Hipertensión..." autocomplete="off"></textarea>
+        </div>
+        <div><label class="campo-label">Observaciones</label>
+          <textarea class="campo" id="antObs" placeholder="Otras observaciones..." autocomplete="off"></textarea>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+          <span class="autosave-ind oculto" id="indicadorAnt"></span>
+          <button onclick="toggleAntecedentes()" style="background:none;border:none;color:#a0aec0;font-size:12px;cursor:pointer;font-weight:600;">▲ Cerrar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CRECIMIENTO -->
+  <div class="seccion" id="seccionCrecimiento">
+    <div class="sec-header">
+      <div class="sec-titulo">📊 Crecimiento</div>
+      <button class="btn-medir" onclick="abrirModalMedir()">+ Medir</button>
+    </div>
+    <div id="crecimientoCard"><div class="loading">Cargando...</div></div>
+    <button class="btn-crec" onclick="abrirModalGrafico()">📈 Ver gráfico completo · historial · PA ›</button>
+  </div>
+
+  <!-- CONSULTA NUEVA -->
+  <div class="consulta-nueva">
+    <div class="consulta-nueva-titulo">
+      ✏️ Registrar consulta de hoy
+      <span class="autosave-ind oculto" id="indicadorConsulta" style="margin-left:auto;font-weight:400;font-size:11px;"></span>
+    </div>
+    <div id="borrador-banner" style="display:none;" class="borrador-banner">
+      📝 Hay un borrador sin guardar
+      <button onclick="descartarBorrador()">Descartar</button>
+    </div>
+    <div class="campo-grid">
+      <div><label class="campo-label">Fecha</label>
+        <input type="date" class="campo" id="consultaFecha" autocomplete="off" /></div>
+      <div><label class="campo-label">Motivo</label>
+        <input type="text" class="campo" id="consultaMotivo" placeholder="Control, Fiebre..." autocomplete="off" /></div>
+      <div><label class="campo-label">Peso (kg)</label>
+        <input type="text" class="campo" id="consultaPeso" placeholder="12.5" autocomplete="off" /></div>
+      <div><label class="campo-label">Talla (cm)</label>
+        <input type="text" class="campo" id="consultaTalla" placeholder="85" autocomplete="off" /></div>
+    </div>
+    <label class="campo-label" style="margin-top:9px;">Signos y síntomas</label>
+    <textarea class="campo" id="consultaSintomas" placeholder="Fiebre 38.5°, tos seca, odinofagia..." autocomplete="off" style="min-height:55px;"></textarea>
+    <label class="campo-label" style="margin-top:9px;">Diagnóstico</label>
+    <input type="text" class="campo" id="consultaDiag" placeholder="Faringitis aguda..." autocomplete="off" />
+    <label class="campo-label" style="margin-top:9px;">Tratamiento / Observaciones</label>
+    <textarea class="campo" id="consultaTrat" placeholder="Amoxicilina 250mg/5ml por 7 días..." autocomplete="off"></textarea>
+    <button class="btn-guardar" onclick="guardarConsulta()">💾 Guardar consulta</button>
+  </div>
+
+  <!-- HISTORIAL DE CONSULTAS -->
+  <div class="seccion">
+    <div class="sec-header"><div class="sec-titulo">📅 Historial de consultas</div></div>
+    <div id="historialConsultas"><div class="loading">Cargando...</div></div>
+  </div>
+
+  <!-- ADJUNTOS -->
+  <div class="seccion">
+    <div class="sec-header"><div class="sec-titulo">📎 Estudios y documentos</div></div>
+    <div id="listaAdjuntos"></div>
+    <div class="upload-btn" onclick="document.getElementById('fileInput').click()">
+      <input type="file" id="fileInput" accept=".pdf,image/*" style="display:none" onchange="subirAdjunto(event)" />
+      📎 Adjuntar estudio o imagen
+    </div>
+  </div>
+
+  <!-- DOCUMENTOS -->
+  <div class="seccion">
+    <div class="sec-header"><div class="sec-titulo">📄 Emitir documento</div></div>
+    <div class="docs-grid">
+      <div class="doc-btn" onclick="abrirDoc('receta')">💊 Receta</div>
+      <div class="doc-btn" onclick="abrirDoc('indicaciones')">📝 Indicaciones</div>
+      <div class="doc-btn" onclick="abrirDoc('certificado')">📄 Certificado</div>
+      <div class="doc-btn" onclick="abrirDoc('factura')">🧾 Factura</div>
+    </div>
+  </div>
+
+</div><!-- /contenido -->
+
+<!-- VISOR IMAGEN -->
+<div class="visor-overlay" id="visorOverlay">
+  <div class="visor-top">
+    <div>
+      <div class="visor-titulo" id="visorTitulo">Imagen</div>
+      <div class="visor-hint">← → Contraste &nbsp;|&nbsp; ↑ ↓ Brillo</div>
+    </div>
+    <div class="visor-btns">
+      <button class="visor-btn" onclick="resetVisor()">↺ Reset</button>
+      <button class="visor-btn" onclick="cerrarVisor()">✕ Cerrar</button>
+    </div>
+  </div>
+  <div class="visor-img-wrap" id="visorWrap">
+    <img class="visor-img" id="visorImg" src="" alt="Imagen" />
+  </div>
+  <div class="visor-stats" id="visorStats">Brillo: 100% · Contraste: 100%</div>
+</div>
+
+<!-- MODAL DATOS PACIENTE -->
+<div class="modal-overlay" id="modalDatos">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-titulo">✏️ Editar datos</div><button class="btn-cerrar" onclick="cerrarModal('modalDatos')">✕</button></div>
+    <div class="campo-grid">
+      <div><label>Apellido</label><input type="text" id="editApellido" autocomplete="off" /></div>
+      <div><label>Nombre</label><input type="text" id="editNombre" autocomplete="off" /></div>
+    </div>
+    <label>DNI</label><input type="text" id="editDni" autocomplete="off" />
+    <label>Fecha de nacimiento</label><input type="date" id="editFechaNac" />
+    <label>Sexo</label>
+    <select id="editSexo"><option value="">— No especificado —</option><option value="M">Varón</option><option value="F">Niña</option></select>
+    <label>Celular</label><input type="text" id="editCel" autocomplete="off" />
+    <label>Tutor / Responsable</label><input type="text" id="editTutor" autocomplete="off" />
+    <div class="campo-grid">
+      <div><label>Obra social</label><input type="text" id="editObraSocial" autocomplete="off" placeholder="OSDE, IOMA..." /></div>
+      <div><label>Nº de afiliado</label><input type="text" id="editNroAfiliado" autocomplete="off" placeholder="1-234567/08" /></div>
+    </div>
+    <label>Dirección</label><input type="text" id="editDireccion" autocomplete="off" />
+    <label>Observaciones</label><textarea id="editObs" autocomplete="off" placeholder="Prematurez, antecedentes relevantes..."></textarea>
+    <div class="modal-footer">
+      <button class="btn-cancelar" onclick="cerrarModal('modalDatos')">Cancelar</button>
+      <button class="btn-confirmar" onclick="guardarDatos()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NUEVA MEDICIÓN -->
+<div class="modal-overlay" id="modalMedir">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-titulo">📏 Nueva medición</div><button class="btn-cerrar" onclick="cerrarModal('modalMedir')">✕</button></div>
+    <label>Fecha</label><input type="date" id="medirFecha" />
+    <div class="campo-grid">
+      <div><label>Peso (kg)</label><input type="text" id="medirPeso" placeholder="12.5" autocomplete="off" /></div>
+      <div><label>Talla (cm)</label><input type="text" id="medirTalla" placeholder="85" autocomplete="off" /></div>
+    </div>
+    <div class="campo-grid">
+      <div><label>Perímetro cefálico (cm)</label><input type="text" id="medirPC" placeholder="50" autocomplete="off" /></div>
+      <div></div>
+    </div>
+    <div class="campo-grid">
+      <div><label>Presión sistólica (mmHg)</label><input type="text" id="medirPAS" placeholder="110" autocomplete="off" /></div>
+      <div><label>Presión diastólica (mmHg)</label><input type="text" id="medirPAD" placeholder="70" autocomplete="off" /></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" onclick="cerrarModal('modalMedir')">Cancelar</button>
+      <button class="btn-confirmar" onclick="guardarMedicion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL EDITAR CONSULTA -->
+<div class="modal-overlay" id="modalEditarConsulta">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-titulo">✏️ Editar consulta</div><button class="btn-cerrar" onclick="cerrarModal('modalEditarConsulta')">✕</button></div>
+    <label>Fecha</label><input type="date" id="editConsFecha" />
+    <label>Motivo</label><input type="text" id="editConsMotivo" autocomplete="off" />
+    <div class="campo-grid">
+      <div><label>Peso (kg)</label><input type="text" id="editConsPeso" autocomplete="off" /></div>
+      <div><label>Talla (cm)</label><input type="text" id="editConsTalla" autocomplete="off" /></div>
+    </div>
+    <label>Signos y síntomas</label><textarea id="editConsSintomas" autocomplete="off"></textarea>
+    <label>Diagnóstico</label><input type="text" id="editConsDiag" autocomplete="off" />
+    <label>Tratamiento / Observaciones</label><textarea id="editConsTrat" autocomplete="off"></textarea>
+    <div class="modal-footer">
+      <button class="btn-cancelar" onclick="cerrarModal('modalEditarConsulta')">Cancelar</button>
+      <button class="btn-confirmar" onclick="guardarEdicionConsulta()">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL GRÁFICO CRECIMIENTO -->
+<div class="modal-overlay" id="modalGrafico">
+  <div class="modal" style="max-width:700px;">
+    <div class="modal-header"><div class="modal-titulo">📈 Crecimiento</div><button class="btn-cerrar" onclick="cerrarModal('modalGrafico')">✕</button></div>
+    <canvas id="graficoCrecimiento" style="width:100%;max-height:300px;"></canvas>
+    <div id="historialMediciones" style="margin-top:1rem;"></div>
+    <div id="tablaPA" style="margin-top:1.2rem;"></div>
+    <div class="modal-footer" style="margin-top:.5rem;">
+      <button class="btn-cancelar" onclick="cerrarModal('modalGrafico')">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL DOCUMENTO -->
+<div class="modal-overlay" id="modalDoc">
+  <div class="modal">
+    <div class="modal-header"><div class="modal-titulo" id="modalDocTitulo"></div><button class="btn-cerrar" onclick="cerrarModal('modalDoc')">✕</button></div>
+    <div id="modalDocBody"></div>
+    <div class="modal-footer">
+      <button class="btn-cancelar" onclick="cerrarModal('modalDoc')">Cancelar</button>
+      <button class="btn-confirmar" onclick="guardarDocumento()">Guardar documento</button>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT FOTO AVATAR (oculto) -->
+<input type="file" id="inputFoto" accept="image/*" capture="environment" style="display:none" onchange="procesarFoto(event)" />
+
+<!-- MENÚ CONTEXTUAL -->
+<div class="ctx-menu" id="ctxMenu" style="display:none;">
+  <div class="ctx-item" id="ctxEditar">✏️ Editar</div>
+  <div class="ctx-item danger" id="ctxEliminar">🗑️ Eliminar</div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getFirestore, collection, doc, addDoc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, query, orderBy, where, limit } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+  const app = initializeApp(CONFIG.firebase);
+  const db = getFirestore(app);
+
+  const params = new URLSearchParams(window.location.search);
+  const pacienteId = params.get("id");
+  let paciente = null;
+  let docTipo = null;
+  let consultaEditandoId = null;
+  let timerAnt = null;
+  let timerConsulta = null;
+  let mediciones = [];
+
+  // ── UTILIDADES ──────────────────────────────────────────────────────────────
+  function calcularEdad(f) {
+    if (!f) return "—";
+    const hoy = new Date(), nac = new Date(f + "T00:00:00");
+    const m = (hoy.getFullYear()-nac.getFullYear())*12+(hoy.getMonth()-nac.getMonth());
+    if (m < 1) return "Recién nacido";
+    if (m < 24) return m + " meses";
+    return Math.floor(m/12) + " años";
+  }
+  function calcularEdadMeses(f) {
+    if (!f) return 0;
+    const hoy = new Date(), nac = new Date(f + "T00:00:00");
+    return (hoy.getFullYear()-nac.getFullYear())*12+(hoy.getMonth()-nac.getMonth());
+  }
+  function formatFecha(f) {
+    if (!f) return "—";
+    return new Date(f+"T00:00:00").toLocaleDateString("es-AR",{day:"numeric",month:"short",year:"numeric"});
+  }
+  function calcularIMC(peso, talla) {
+    if (!peso || !talla) return null;
+    return (parseFloat(peso) / Math.pow(parseFloat(talla)/100, 2)).toFixed(1);
+  }
+  function clasificarIMC(imc, meses) {
+    if (!imc) return { label:"—", clase:"pct-v" };
+    const v = parseFloat(imc);
+    if (meses < 24) {
+      if (v < 13) return { label:"Bajo", clase:"pct-r" };
+      if (v < 17) return { label:"Normal", clase:"pct-v" };
+      if (v < 19) return { label:"Alto", clase:"pct-a" };
+      return { label:"Obesidad", clase:"pct-r" };
+    }
+    if (v < 14) return { label:"Bajo", clase:"pct-r" };
+    if (v < 18) return { label:"Normal", clase:"pct-v" };
+    if (v < 20) return { label:"Sobrepeso", clase:"pct-a" };
+    return { label:"Obesidad", clase:"pct-r" };
+  }
+  // WHO peso P3/P50/P97 por edad en meses (0,3,6,12,18,24,36,48,60)
+  // WHO/OMS peso (kg) P3/P50/P97 — 0 a 192 meses (16 años)
+  const WHO_MESES = [0,3,6,12,18,24,36,48,60,72,84,96,108,120,132,144,156,168,180,192];
+  const WHO_P3    = [2.9,5.0,6.4,7.7,8.4,9.0,10.2,11.3,12.4,13.7,15.1,16.5,18.0,22.0,25.0,28.0,32.0,37.0,41.0,44.0];
+  const WHO_P50   = [3.3,5.9,7.4,8.9,9.9,11.1,13.0,14.8,16.7,18.7,21.0,23.6,26.5,31.0,35.5,40.0,46.0,52.0,57.0,60.0];
+  const WHO_P97   = [3.9,7.1,8.8,10.8,12.1,13.6,15.8,17.9,20.0,23.0,27.0,31.5,37.0,44.0,52.0,60.0,70.0,78.0,82.0,85.0];
+  function interpolar(tabla, meses) {
+    for (let i = 0; i < WHO_MESES.length-1; i++) {
+      if (meses <= WHO_MESES[i+1]) {
+        const t = (meses - WHO_MESES[i]) / (WHO_MESES[i+1] - WHO_MESES[i]);
+        return tabla[i] + t * (tabla[i+1] - tabla[i]);
+      }
+    }
+    return tabla[tabla.length-1];
+  }
+  function percentilPeso(peso, meses) {
+    if (!peso) return null;
+    const p = parseFloat(peso);
+    const p3 = interpolar(WHO_P3, meses);
+    const p50 = interpolar(WHO_P50, meses);
+    const p97 = interpolar(WHO_P97, meses);
+    if (p < p3) return { label:"< P3", clase:"pct-r", pos: 5 };
+    if (p < p50) { const pos = 10 + 40*(p-p3)/(p50-p3); return { label:"P3-P50", clase:"pct-v", pos }; }
+    if (p < p97) { const pos = 50 + 40*(p-p50)/(p97-p50); return { label:"P50-P97", clase:"pct-v", pos }; }
+    return { label:"> P97", clase:"pct-r", pos: 95 };
+  }
+
+  // PA por talla (cm): [talla_min, talla_max, label, P90_SIS, P95_SIS, P90_DIA, P95_DIA]
+  // Derivado de AAP 2017 / OMS — percentil 50 de talla para cada rango
+  const PA_TALLA = [
+    [0,   85,  "hasta 85 cm",   100, 104, 54, 58],
+    [85,  95,  "85 – 95 cm",    101, 105, 57, 61],
+    [95,  105, "95 – 105 cm",   103, 107, 60, 64],
+    [105, 115, "105 – 115 cm",  105, 109, 62, 66],
+    [115, 125, "115 – 125 cm",  107, 111, 64, 68],
+    [125, 135, "125 – 135 cm",  109, 113, 66, 70],
+    [135, 145, "135 – 145 cm",  111, 115, 68, 72],
+    [145, 155, "145 – 155 cm",  114, 118, 70, 74],
+    [155, 165, "155 – 165 cm",  117, 121, 72, 76],
+    [165, 175, "165 – 175 cm",  120, 124, 74, 78],
+    [175, 999, "más de 175 cm", 122, 126, 76, 80],
+  ];
+
+  function mostrarIndicador(id, estado) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove("oculto","guardando","guardado");
+    if (estado === "guardando") { el.textContent = "⏳ Guardando..."; el.classList.add("guardando"); }
+    else if (estado === "guardado") { el.textContent = "✅ Guardado"; el.classList.add("guardado"); setTimeout(()=>el.classList.add("oculto"),2500); }
+  }
+
+  // ── CARGAR PACIENTE ──────────────────────────────────────────────────────────
+  async function cargarPaciente() {
+    if (!pacienteId) { document.body.innerHTML = "<p style='padding:2rem;color:red;'>Paciente no encontrado.</p>"; return; }
+    try {
+      const snap = await getDoc(doc(db,"pacientes",pacienteId));
+      if (!snap.exists()) { document.body.innerHTML = "<p style='padding:2rem;color:red;'>Paciente no encontrado.</p>"; return; }
+      paciente = { id: snap.id, ...snap.data() };
+      const cel = (paciente.cel||"").replace(/\D/g,"");
+      document.getElementById("topbarTitulo").textContent = (paciente.apellido||"") + ", " + (paciente.nombre||"");
+      document.getElementById("btnWa").href = "https://wa.me/549" + cel;
+      document.getElementById("btnTc").href = "https://wa.me/549" + cel + "?text=" + encodeURIComponent(CONFIG.mensajeTeleconsulta||"");
+      let motivoTurno = "";
+      try {
+        const qT = query(collection(db,"turnos"), where("dni","==",paciente.dni), orderBy("fecha","desc"), limit(1));
+        const snapT = await getDocs(qT);
+        if (!snapT.empty) motivoTurno = snapT.docs[0].data().motivo || "";
+      } catch(e) {}
+      renderCabecera(motivoTurno);
+      await cargarAntecedentes();
+      await cargarMediciones();
+      await cargarConsultas();
+      await cargarAdjuntos();
+      limpiarFormConsulta();
+      cargarBorrador();
+    } catch(err) {
+      console.error("Error cargarPaciente:", err);
+      document.getElementById("pacienteHeader").innerHTML = "<div style='padding:1rem;color:red;font-size:13px;'>Error: " + err.message + "</div>";
+    }
+  }
+
+  // ── CABECERA ─────────────────────────────────────────────────────────────────
+  function renderCabecera(motivoTurno) {
+    const edad = calcularEdad(paciente.fechaNac);
+    const abierto = localStorage.getItem("ph_exp_"+pacienteId) === "1";
+    const sexo = paciente.sexo || "";
+    const claseColor = sexo === "M" ? "varon" : sexo === "F" ? "mujer" : "neutro";
+    const iniciales = ((paciente.apellido||"?")[0]+(paciente.nombre||"?")[0]).toUpperCase();
+    const avatarHTML = paciente.foto
+      ? `<img src="${paciente.foto}" alt="foto" />`
+      : iniciales;
+
+    document.getElementById("pacienteHeader").innerHTML = `
+      <div class="ph-enc ${claseColor}">
+        <div class="ph-avatar-wrap" onclick="document.getElementById('inputFoto').click()">
+          <div class="ph-avatar">${avatarHTML}</div>
+          <div class="ph-avatar-edit">📷</div>
+        </div>
+        <div>
+          <div class="ph-nombre">${paciente.apellido}, ${paciente.nombre}</div>
+          <div class="ph-meta">DNI ${paciente.dni||"—"} · ${edad}</div>
+        </div>
+      </div>
+      <div class="ph-fijos">
+        ${paciente.tutor ? `<div class="ph-row"><span class="ph-row-icon">👤</span><span><strong>${paciente.tutor}</strong>${paciente.cel?" · "+paciente.cel:""}</span></div>` : ""}
+        ${motivoTurno ? `<div class="ph-row"><span class="ph-row-icon">📋</span><span class="ph-motivo-chip">${motivoTurno}</span></div>` : ""}
+      </div>
+      <div class="ph-toggle-bar ${abierto?"open":""}" id="phToggle" onclick="toggleDatos()">
+        <span class="ph-arrow">▼</span> Ver datos completos
+      </div>
+      <div class="ph-expandable ${abierto?"open":""}" id="phExpandable">
+        <div class="ph-expand-inner">
+          <div class="ph-bloque">
+            <div class="ph-bloque-titulo">Paciente</div>
+            <div class="ph-grid">
+              <div><div class="ph-lbl">Apellido y nombre</div><div class="ph-val">${paciente.apellido}, ${paciente.nombre}</div></div>
+              <div><div class="ph-lbl">DNI</div><div class="ph-val">${paciente.dni||"—"}</div></div>
+              <div><div class="ph-lbl">Fecha de nac.</div><div class="ph-val">${formatFecha(paciente.fechaNac)}</div></div>
+              <div><div class="ph-lbl">Edad</div><div class="ph-val">${edad}</div></div>
+              <div class="ph-full"><div class="ph-lbl">Dirección</div><div class="ph-val">${paciente.direccion||"—"}</div></div>
+              ${paciente.obs?`<div class="ph-full"><div class="ph-lbl">Observaciones</div><div class="ph-val">${paciente.obs}</div></div>`:""}
+            </div>
+          </div>
+          <div class="ph-bloque">
+            <div class="ph-bloque-titulo">Tutor / Responsable</div>
+            <div class="ph-grid">
+              <div><div class="ph-lbl">Nombre</div><div class="ph-val">${paciente.tutor||"—"}</div></div>
+              <div><div class="ph-lbl">Celular</div><div class="ph-val">${paciente.cel||"—"}</div></div>
+            </div>
+          </div>
+          <div class="ph-bloque">
+            <div class="ph-bloque-titulo">Cobertura médica</div>
+            <div class="ph-grid">
+              <div><div class="ph-lbl">Obra social</div><div class="ph-val">${paciente.obraSocial||"—"}</div></div>
+              <div><div class="ph-lbl">Nº afiliado</div><div class="ph-val">${paciente.nroAfiliado||"—"}</div></div>
+            </div>
+          </div>
+          <button class="btn-editar-header" onclick="abrirModalDatos()">✏️ Editar todos los datos</button>
+          <button class="btn-editar-header" style="color:#a0aec0;margin-top:8px;" onclick="toggleDatos()">▲ Cerrar datos</button>
+        </div>
+      </div>`;
+  }
+
+  window.toggleDatos = function() {
+    const exp = document.getElementById("phExpandable");
+    const tog = document.getElementById("phToggle");
+    const open = exp.classList.toggle("open");
+    tog.classList.toggle("open", open);
+    localStorage.setItem("ph_exp_"+pacienteId, open?"1":"0");
+  }
+
+  // ── FOTO ──────────────────────────────────────────────────────────────────────
+  window.procesarFoto = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = 200; canvas.height = 200;
+        const ctx = canvas.getContext("2d");
+        const size = Math.min(img.width, img.height);
+        const sx = (img.width-size)/2, sy = (img.height-size)/2;
+        ctx.drawImage(img, sx, sy, size, size, 0, 0, 200, 200);
+        const base64 = canvas.toDataURL("image/jpeg", 0.8);
+        await updateDoc(doc(db,"pacientes",pacienteId), { foto: base64 });
+        paciente.foto = base64;
+        const avatarEl = document.querySelector(".ph-avatar");
+        if (avatarEl) avatarEl.innerHTML = `<img src="${base64}" alt="foto" />`;
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+    event.target.value = "";
+  }
+
+  // ── MODAL DATOS ───────────────────────────────────────────────────────────────
+  window.abrirModalDatos = function() {
+    document.getElementById("editApellido").value = paciente.apellido||"";
+    document.getElementById("editNombre").value = paciente.nombre||"";
+    document.getElementById("editDni").value = paciente.dni||"";
+    document.getElementById("editFechaNac").value = paciente.fechaNac||"";
+    document.getElementById("editSexo").value = paciente.sexo||"";
+    document.getElementById("editCel").value = paciente.cel||"";
+    document.getElementById("editTutor").value = paciente.tutor||"";
+    document.getElementById("editObraSocial").value = paciente.obraSocial||"";
+    document.getElementById("editNroAfiliado").value = paciente.nroAfiliado||"";
+    document.getElementById("editDireccion").value = paciente.direccion||"";
+    document.getElementById("editObs").value = paciente.obs||"";
+    document.getElementById("modalDatos").classList.add("open");
+  }
+
+  window.guardarDatos = async function() {
+    const datos = {
+      apellido: document.getElementById("editApellido").value.trim(),
+      nombre: document.getElementById("editNombre").value.trim(),
+      dni: document.getElementById("editDni").value.trim(),
+      fechaNac: document.getElementById("editFechaNac").value,
+      sexo: document.getElementById("editSexo").value,
+      cel: document.getElementById("editCel").value.trim(),
+      tutor: document.getElementById("editTutor").value.trim(),
+      obraSocial: document.getElementById("editObraSocial").value.trim(),
+      nroAfiliado: document.getElementById("editNroAfiliado").value.trim(),
+      direccion: document.getElementById("editDireccion").value.trim(),
+      obs: document.getElementById("editObs").value.trim(),
+    };
+    await updateDoc(doc(db,"pacientes",pacienteId), datos);
+    Object.assign(paciente, datos);
+    const motivoActual = document.querySelector(".ph-motivo-chip")?.textContent.trim() || "";
+    renderCabecera(motivoActual);
+    document.getElementById("topbarTitulo").textContent = paciente.apellido + ", " + paciente.nombre;
+    cerrarModal("modalDatos");
+  }
+
+  // ── ANTECEDENTES ──────────────────────────────────────────────────────────────
+  async function cargarAntecedentes() {
+    const snap = await getDoc(doc(db,"pacientes",pacienteId,"medico","datos"));
+    const m = snap.exists() ? snap.data() : {};
+    renderAntecedentes(m);
+    document.getElementById("antGrupo").value = m.grupo||"";
+    document.getElementById("antVacunas").value = m.vacunas||"";
+    document.getElementById("antAlergias").value = m.alergias||"";
+    document.getElementById("antMedicacion").value = m.medicacion||"";
+    document.getElementById("antFamiliares").value = m.antecedentes||"";
+    document.getElementById("antObs").value = m.obs||"";
+    engancharAutosaveAnt();
+  }
+
+  function renderAntecedentes(m) {
+    const tieneAlergia = m.alergias && m.alergias.trim() && m.alergias.toLowerCase() !== "no" && m.alergias.toLowerCase() !== "no.";
+    const vacunas = m.vacunas || "";
+    document.getElementById("antItems").innerHTML = `
+      <div class="ant-row">
+        <span class="ant-icon">${tieneAlergia?"⚠️":"✅"}</span>
+        <div class="ant-info">
+          <div class="ant-lbl">Alergias</div>
+          <div class="ant-val"><span class="chip ${tieneAlergia?"chip-rojo":"chip-gris"}">${m.alergias||"Sin alergias conocidas"}</span></div>
+        </div>
+      </div>
+      <div class="ant-row">
+        <span class="ant-icon">💊</span>
+        <div class="ant-info">
+          <div class="ant-lbl">Medicación habitual</div>
+          <div class="ant-val"><span class="chip ${m.medicacion?"chip-azul":"chip-gris"}">${m.medicacion||"Ninguna"}</span></div>
+        </div>
+      </div>
+      ${m.obs?`<div class="ant-row"><span class="ant-icon">📝</span><div class="ant-info"><div class="ant-lbl">Observaciones</div><div class="ant-val">${m.obs}</div></div></div>`:""}
+    `;
+    const badge = document.getElementById("vacBadge");
+    if (vacunas) {
+      const completa = vacunas === "Al día";
+      badge.innerHTML = `<button class="vac-badge ${completa?"completa":"incompleta"}" onclick="irAVacunas()">${completa?"💉 Al día ✓":"💉 Incompletas ▸"}</button>`;
+    } else { badge.innerHTML = ""; }
+  }
+
+  window.irAVacunas = function() {
+    document.getElementById("antToggle").click();
+    setTimeout(()=>document.getElementById("antVacunas").focus(), 400);
+  }
+
+  window.toggleAntecedentes = function() {
+    const exp = document.getElementById("antExpandable");
+    const tog = document.getElementById("antToggle");
+    const open = exp.classList.toggle("open");
+    tog.classList.toggle("open", open);
+  }
+
+  function engancharAutosaveAnt() {
+    ["antGrupo","antVacunas","antAlergias","antMedicacion","antFamiliares","antObs"].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) { el.addEventListener("input", iniciarAutosaveAnt); el.addEventListener("change", iniciarAutosaveAnt); }
+    });
+  }
+
+  function iniciarAutosaveAnt() {
+    mostrarIndicador("indicadorAnt","guardando");
+    clearTimeout(timerAnt);
+    timerAnt = setTimeout(autosaveAnt, 2000);
+  }
+
+  async function autosaveAnt() {
+    const datos = {
+      grupo: document.getElementById("antGrupo").value,
+      vacunas: document.getElementById("antVacunas").value,
+      alergias: document.getElementById("antAlergias").value,
+      medicacion: document.getElementById("antMedicacion").value,
+      antecedentes: document.getElementById("antFamiliares").value,
+      obs: document.getElementById("antObs").value,
+      actualizadoEn: new Date().toISOString()
+    };
+    await setDoc(doc(db,"pacientes",pacienteId,"medico","datos"), datos);
+    renderAntecedentes(datos);
+    mostrarIndicador("indicadorAnt","guardado");
+  }
+
+  // ── CRECIMIENTO ───────────────────────────────────────────────────────────────
+  async function cargarMediciones() {
+    try {
+      const q = query(collection(db,"pacientes",pacienteId,"mediciones"), orderBy("fecha","desc"));
+      const snap = await getDocs(q);
+      mediciones = snap.docs.map(d=>({id:d.id,...d.data()}));
+    } catch(e) { mediciones = []; }
+    renderCrecimientoCompacto();
+  }
+
+  function renderCrecimientoCompacto() {
+    const cont = document.getElementById("crecimientoCard");
+    if (!mediciones.length) {
+      cont.innerHTML = '<div class="empty">Sin mediciones registradas. Tocá "+ Medir".</div>';
+      return;
+    }
+    const ultima = mediciones[0];
+    const meses = calcularEdadMeses(paciente.fechaNac);
+    const imc = calcularIMC(ultima.peso, ultima.talla);
+    const imcClase = clasificarIMC(imc, meses);
+    const pctPeso = percentilPeso(ultima.peso, meses);
+
+    cont.innerHTML = `
+      <div style="padding:.2rem 1.1rem .3rem;font-size:11px;color:#a0aec0;text-align:right;">Última: ${formatFecha(ultima.fecha)}</div>
+      <div class="crec-metricas">
+        <div class="crec-met">
+          <div class="crec-met-lbl">Peso</div>
+          <div class="crec-met-val">${ultima.peso||"—"}</div>
+          <div class="crec-met-unit">kg</div>
+          <div class="crec-pct ${pctPeso?.clase||"pct-v"}">${pctPeso?.label||"—"}</div>
+        </div>
+        <div class="crec-met">
+          <div class="crec-met-lbl">Talla</div>
+          <div class="crec-met-val">${ultima.talla||"—"}</div>
+          <div class="crec-met-unit">cm</div>
+          <div class="crec-pct pct-v">—</div>
+        </div>
+        <div class="crec-met">
+          <div class="crec-met-lbl">IMC</div>
+          <div class="crec-met-val">${imc||"—"}</div>
+          <div class="crec-met-unit">kg/m²</div>
+          <div class="crec-pct ${imcClase.clase}">${imcClase.label}</div>
+        </div>
+        <div class="crec-met">
+          <div class="crec-met-lbl">PC</div>
+          <div class="crec-met-val">${ultima.pc||"—"}</div>
+          <div class="crec-met-unit">cm</div>
+          <div class="crec-pct pct-v">—</div>
+        </div>
+      </div>
+      ${pctPeso ? `<div class="crec-barra-wrap">
+        <div class="crec-barra-top"><span>Peso / curva OMS</span><span style="font-weight:600;color:${pctPeso.clase==='pct-v'?'#276749':pctPeso.clase==='pct-a'?'#744210':'#c53030'}">${pctPeso.label}</span></div>
+        <div class="crec-barra"><div class="crec-needle" style="left:${pctPeso.pos}%;"></div></div>
+        <div class="crec-barra-bot"><span>P3</span><span>P50</span><span>P97</span></div>
+      </div>` : ""}
+    `;
+  }
+
+  window.abrirModalMedir = function() {
+    document.getElementById("medirFecha").value = new Date().toISOString().split("T")[0];
+    document.getElementById("medirPeso").value = "";
+    document.getElementById("medirTalla").value = "";
+    document.getElementById("medirPC").value = "";
+    document.getElementById("modalMedir").classList.add("open");
+  }
+
+  window.guardarMedicion = async function() {
+    const datos = {
+      fecha: document.getElementById("medirFecha").value,
+      peso: document.getElementById("medirPeso").value,
+      talla: document.getElementById("medirTalla").value,
+      pc: document.getElementById("medirPC").value,
+      pas: document.getElementById("medirPAS").value,
+      pad: document.getElementById("medirPAD").value,
+      creadoEn: new Date().toISOString()
+    };
+    if (!datos.fecha || !datos.peso) { alert("Completá fecha y peso."); return; }
+    await addDoc(collection(db,"pacientes",pacienteId,"mediciones"), datos);
+    cerrarModal("modalMedir");
+    await cargarMediciones();
+  }
+
+  window.abrirModalGrafico = async function() {
+    document.getElementById("modalGrafico").classList.add("open");
+    setTimeout(()=>dibujarGrafico(), 100);
+    renderHistorialMediciones();
+    renderTablaPA();
+  }
+
+  function renderTablaPA() {
+    const cont = document.getElementById("tablaPA");
+    if (!cont) return;
+    const ultima = mediciones[0];
+    const talla = ultima?.talla ? parseFloat(ultima.talla) : null;
+    const peso  = ultima?.peso  ? parseFloat(ultima.peso)  : null;
+
+    const filas = PA_TALLA.map(([min, max, label, p90s, p95s, p90d, p95d]) => {
+      const esActual = talla !== null && talla >= min && talla < max;
+      return `<tr style="background:${esActual?'#ebf4ff':''};border-bottom:1px solid #f0f4f8;">
+        <td style="padding:7px 10px;font-weight:${esActual?700:400};color:${esActual?'#2c5282':'#4a5568'};">
+          ${esActual?'▶ ':''}${label}
+        </td>
+        <td style="padding:7px 10px;text-align:center;color:#276749;">&lt; ${p90s} / ${p90d}</td>
+        <td style="padding:7px 10px;text-align:center;color:#744210;">${p90s}–${p95s-1} / ${p90d}–${p95d-1}</td>
+        <td style="padding:7px 10px;text-align:center;color:#c53030;">&ge; ${p95s} / ${p95d}</td>
+      </tr>`;
+    }).join('');
+
+    cont.innerHTML = `
+      <div style="font-size:14px;font-weight:600;color:#2d3748;margin-bottom:6px;">💉 PA de referencia según talla y peso — OMS / AAP 2017</div>
+      <div style="font-size:12px;color:#718096;margin-bottom:10px;">
+        ${talla ? `Talla actual: <strong>${talla} cm</strong>` : 'Sin talla registrada'}
+        ${peso  ? ` · Peso: <strong>${peso} kg</strong>` : ''}
+        ${talla ? ' · La fila <span style="color:#2c5282;font-weight:600;">▶ azul</span> corresponde a la talla del paciente' : ''}
+      </div>
+      <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead>
+          <tr style="background:#f7fafc;">
+            <th style="padding:7px 10px;text-align:left;color:#718096;font-weight:600;border-bottom:2px solid #e2e8f0;white-space:nowrap;">Talla</th>
+            <th style="padding:7px 10px;text-align:center;color:#276749;font-weight:600;border-bottom:2px solid #e2e8f0;white-space:nowrap;">Normal (SIS/DIA)</th>
+            <th style="padding:7px 10px;text-align:center;color:#744210;font-weight:600;border-bottom:2px solid #e2e8f0;white-space:nowrap;">Elevada</th>
+            <th style="padding:7px 10px;text-align:center;color:#c53030;font-weight:600;border-bottom:2px solid #e2e8f0;white-space:nowrap;">HTA (&ge; P95)</th>
+          </tr>
+        </thead>
+        <tbody>${filas}</tbody>
+      </table>
+      </div>
+      <div style="font-size:11px;color:#a0aec0;margin-top:7px;">Valores en mmHg (Sistólica / Diastólica). Normal &lt; P90 · Elevada P90–P94 · HTA ≥ P95. Fuente: AAP 2017 / OMS.</div>
+    `;
+  }
+
+  function renderHistorialMediciones() {
+    const cont = document.getElementById("historialMediciones");
+    if (!mediciones.length) { cont.innerHTML = ""; return; }
+    cont.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px;">
+      <thead><tr style="border-bottom:2px solid #e2e8f0;">
+        <th style="padding:6px 8px;text-align:left;color:#a0aec0;font-weight:600;">Fecha</th>
+        <th style="padding:6px 8px;text-align:center;color:#a0aec0;font-weight:600;">Peso</th>
+        <th style="padding:6px 8px;text-align:center;color:#a0aec0;font-weight:600;">Talla</th>
+        <th style="padding:6px 8px;text-align:center;color:#a0aec0;font-weight:600;">IMC</th>
+        <th style="padding:6px 8px;text-align:center;color:#a0aec0;font-weight:600;">PC</th>
+        <th style="padding:6px 8px;text-align:center;color:#a0aec0;font-weight:600;">PA</th>
+        <th style="padding:6px 8px;width:36px;"></th>
+      </tr></thead>
+      <tbody>${mediciones.map(m=>`<tr style="border-bottom:1px solid #f0f4f8;">
+        <td style="padding:7px 8px;">${formatFecha(m.fecha)}</td>
+        <td style="padding:7px 8px;text-align:center;">${m.peso||"—"} kg</td>
+        <td style="padding:7px 8px;text-align:center;">${m.talla||"—"} cm</td>
+        <td style="padding:7px 8px;text-align:center;">${calcularIMC(m.peso,m.talla)||"—"}</td>
+        <td style="padding:7px 8px;text-align:center;">${m.pc||"—"} cm</td>
+        <td style="padding:7px 8px;text-align:center;">${m.pas&&m.pad?m.pas+"/"+m.pad:"—"}</td>
+        <td style="padding:4px 6px;text-align:center;"><button onclick="eliminarMedicion('${m.id}')" title="Eliminar" style="background:none;border:none;color:#e53e3e;cursor:pointer;font-size:15px;padding:2px 4px;border-radius:4px;" onmouseover="this.style.background='#fff5f5'" onmouseout="this.style.background='none'">🗑️</button></td>
+      </tr>`).join("")}</tbody>
+    </table>`;
+  }
+
+  window.eliminarMedicion = async function(id) {
+    if (!confirm("¿Eliminar esta medición?")) return;
+    await deleteDoc(doc(db, "pacientes", pacienteId, "mediciones", id));
+    await cargarMediciones();
+    renderHistorialMediciones();
+    renderTablaPA();
+    setTimeout(()=>dibujarGrafico(), 50);
+  };
+
+  function dibujarGrafico() {
+    const canvas = document.getElementById("graficoCrecimiento");
+    if (!canvas) return;
+    const W = canvas.offsetWidth || 500;
+    const H = 280;
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext("2d");
+    const pad = { top:20, right:20, bottom:35, left:40 };
+    const w = W - pad.left - pad.right;
+    const h = H - pad.top - pad.bottom;
+    ctx.clearRect(0,0,W,H);
+
+    const maxMeses = 192;
+    const minPeso = 0, maxPeso = 90;
+    const xS = m => pad.left + (m/maxMeses)*w;
+    const yS = p => pad.top + h - ((p-minPeso)/(maxPeso-minPeso))*h;
+
+    // Fondo
+    ctx.fillStyle="#f7fafc"; ctx.fillRect(pad.left,pad.top,w,h);
+    // Grid
+    ctx.strokeStyle="#e2e8f0"; ctx.lineWidth=1;
+    [0,10,20,30,40,50,60,70,80,90].forEach(p => { ctx.beginPath(); ctx.moveTo(pad.left,yS(p)); ctx.lineTo(pad.left+w,yS(p)); ctx.stroke(); });
+    [0,24,48,72,96,120,144,168,192].forEach(m => { ctx.beginPath(); ctx.moveTo(xS(m),pad.top); ctx.lineTo(xS(m),pad.top+h); ctx.stroke(); });
+
+    // Curvas OMS
+    function dibujarCurva(tabla, color, dash=[]) {
+      ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=1.5; ctx.setLineDash(dash);
+      WHO_MESES.forEach((m,i) => { if(i===0) ctx.moveTo(xS(m),yS(tabla[i])); else ctx.lineTo(xS(m),yS(tabla[i])); });
+      ctx.stroke(); ctx.setLineDash([]);
+    }
+    dibujarCurva(WHO_P3, "#fc8181", [4,3]);
+    dibujarCurva(WHO_P50, "#48bb78");
+    dibujarCurva(WHO_P97, "#fc8181", [4,3]);
+
+    // Labels OMS
+    ctx.fillStyle="#a0aec0"; ctx.font="10px sans-serif";
+    ctx.fillText("P3",xS(60)+3,yS(WHO_P3[WHO_P3.length-1])+4);
+    ctx.fillText("P50",xS(60)+3,yS(WHO_P50[WHO_P50.length-1])+4);
+    ctx.fillText("P97",xS(60)+3,yS(WHO_P97[WHO_P97.length-1])+4);
+
+    // Mediciones del paciente
+    const mesesNac = (f) => {
+      if (!f || !paciente.fechaNac) return 0;
+      const nac = new Date(paciente.fechaNac+"T00:00:00"), med = new Date(f+"T00:00:00");
+      return (med.getFullYear()-nac.getFullYear())*12+(med.getMonth()-nac.getMonth());
+    };
+    if (mediciones.length > 1) {
+      ctx.beginPath(); ctx.strokeStyle="#667eea"; ctx.lineWidth=2;
+      mediciones.slice().reverse().forEach((m,i) => {
+        if(!m.peso) return;
+        const x=xS(mesesNac(m.fecha)), y=yS(parseFloat(m.peso));
+        if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.stroke();
+    }
+    mediciones.forEach(m => {
+      if(!m.peso) return;
+      const x=xS(mesesNac(m.fecha)), y=yS(parseFloat(m.peso));
+      ctx.beginPath(); ctx.arc(x,y,5,0,Math.PI*2);
+      ctx.fillStyle="#667eea"; ctx.fill();
+      ctx.strokeStyle="#fff"; ctx.lineWidth=2; ctx.stroke();
+    });
+
+    // Ejes
+    ctx.fillStyle="#718096"; ctx.font="11px sans-serif"; ctx.textAlign="center";
+    [0,24,48,72,96,120,144,168,192].forEach(m => ctx.fillText(m<24?m+"m":(m/12)+"a", xS(m), H-8));
+    ctx.textAlign="right";
+    [0,20,40,60,80].forEach(p => ctx.fillText(p, pad.left-5, yS(p)+4));
+  }
+
+  // ── CONSULTAS ─────────────────────────────────────────────────────────────────
+  function limpiarFormConsulta() {
+    document.getElementById("consultaFecha").value = new Date().toISOString().split("T")[0];
+    ["consultaMotivo","consultaPeso","consultaTalla","consultaSintomas","consultaDiag","consultaTrat"].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=""; });
+  }
+
+  async function cargarConsultas() {
+    const cont = document.getElementById("historialConsultas");
+    try {
+      const q = query(collection(db,"pacientes",pacienteId,"consultas"), orderBy("fecha","desc"));
+      const snap = await getDocs(q);
+      if (snap.empty) { cont.innerHTML = '<div class="empty">No hay consultas registradas aún.</div>'; return; }
+      cont.innerHTML = snap.docs.map(d => {
+        const c = d.data();
+        const id = d.id;
+        return `
+          <div class="consulta-list-item">
+            <div class="consulta-row" onclick="toggleConsulta('exp_${id}','arr_${id}')">
+              <span class="consulta-row-fecha">${formatFecha(c.fecha)}</span>
+              <span class="consulta-row-motivo">${c.motivo||"Sin motivo"}</span>
+              <button class="btn-menu-cons" onclick="event.stopPropagation();mostrarMenuConsulta('${id}',event)">⋯</button>
+              <span class="consulta-row-arrow" id="arr_${id}">›</span>
+            </div>
+            <div class="consulta-exp" id="exp_${id}">
+              <div class="consulta-exp-inner">
+                ${c.peso||c.talla?`<div class="det-medidas">
+                  ${c.peso?`<span class="det-med">⚖️ ${c.peso} kg</span>`:""}
+                  ${c.talla?`<span class="det-med">📏 ${c.talla} cm</span>`:""}
+                  ${c.peso&&c.talla?`<span class="det-med">IMC ${calcularIMC(c.peso,c.talla)}</span>`:""}
+                </div>`:""}
+                ${c.sintomas?`<div class="det-bloque"><div class="det-lbl">Signos y síntomas</div>${c.sintomas}</div>`:""}
+                ${c.diagnostico?`<div class="det-bloque"><div class="det-lbl">Diagnóstico</div>${c.diagnostico}</div>`:""}
+                ${c.tratamiento?`<div class="det-bloque"><div class="det-lbl">Tratamiento</div>${c.tratamiento}</div>`:""}
+              </div>
+            </div>
+          </div>`;
+      }).join("");
+    } catch(e) { cont.innerHTML = '<div class="empty">Error al cargar consultas.</div>'; }
+  }
+
+  window.toggleConsulta = function(expId, arrId) {
+    const exp = document.getElementById(expId);
+    const arr = document.getElementById(arrId);
+    if (exp) exp.classList.toggle("open");
+    if (arr) arr.classList.toggle("open");
+  }
+
+  let _ctxDocId = null;
+  window.mostrarMenuConsulta = function(docId, event) {
+    _ctxDocId = docId;
+    const menu = document.getElementById("ctxMenu");
+    menu.style.display = "block";
+    menu.style.top = (event.clientY - 10) + "px";
+    menu.style.left = Math.min(event.clientX, window.innerWidth-160) + "px";
+    document.getElementById("ctxEditar").onclick = () => { menu.style.display="none"; editarConsulta(docId); };
+    document.getElementById("ctxEliminar").onclick = () => { menu.style.display="none"; eliminarConsulta(docId); };
+  }
+  document.addEventListener("click", e => {
+    const menu = document.getElementById("ctxMenu");
+    if (!e.target.closest(".ctx-menu") && !e.target.closest(".btn-menu-cons")) menu.style.display="none";
+  });
+
+  window.editarConsulta = async function(docId) {
+    consultaEditandoId = docId;
+    const snap = await getDoc(doc(db,"pacientes",pacienteId,"consultas",docId));
+    if (!snap.exists()) return;
+    const c = snap.data();
+    document.getElementById("editConsFecha").value = c.fecha||"";
+    document.getElementById("editConsMotivo").value = c.motivo||"";
+    document.getElementById("editConsPeso").value = c.peso||"";
+    document.getElementById("editConsTalla").value = c.talla||"";
+    document.getElementById("editConsSintomas").value = c.sintomas||"";
+    document.getElementById("editConsDiag").value = c.diagnostico||"";
+    document.getElementById("editConsTrat").value = c.tratamiento||"";
+    document.getElementById("modalEditarConsulta").classList.add("open");
+  }
+
+  window.guardarEdicionConsulta = async function() {
+    if (!consultaEditandoId) return;
+    const datos = {
+      fecha: document.getElementById("editConsFecha").value,
+      motivo: document.getElementById("editConsMotivo").value.trim(),
+      peso: document.getElementById("editConsPeso").value,
+      talla: document.getElementById("editConsTalla").value,
+      sintomas: document.getElementById("editConsSintomas").value,
+      diagnostico: document.getElementById("editConsDiag").value,
+      tratamiento: document.getElementById("editConsTrat").value,
+    };
+    await updateDoc(doc(db,"pacientes",pacienteId,"consultas",consultaEditandoId), datos);
+    cerrarModal("modalEditarConsulta");
+    cargarConsultas();
+  }
+
+  window.eliminarConsulta = function(docId) {
+    if (!confirm("¿Eliminar esta consulta? Esta acción no se puede deshacer.")) return;
+    deleteDoc(doc(db,"pacientes",pacienteId,"consultas",docId)).then(()=>cargarConsultas());
+  }
+
+  window.guardarConsulta = async function() {
+    const fecha = document.getElementById("consultaFecha").value;
+    const motivo = document.getElementById("consultaMotivo").value.trim();
+    if (!fecha || !motivo) { alert("Completá fecha y motivo."); return; }
+    await addDoc(collection(db,"pacientes",pacienteId,"consultas"), {
+      fecha, motivo,
+      peso: document.getElementById("consultaPeso").value,
+      talla: document.getElementById("consultaTalla").value,
+      sintomas: document.getElementById("consultaSintomas").value,
+      diagnostico: document.getElementById("consultaDiag").value,
+      tratamiento: document.getElementById("consultaTrat").value,
+      creadoEn: new Date().toISOString()
+    });
+    await updateDoc(doc(db,"pacientes",pacienteId), { ultimaConsulta: fecha });
+    limpiarFormConsulta();
+    localStorage.removeItem(BORRADOR_KEY());
+    document.getElementById("borrador-banner").style.display="none";
+    cargarConsultas();
+  }
+
+  // ── BORRADOR CONSULTA ─────────────────────────────────────────────────────────
+  const BORRADOR_KEY = () => `borrador_${pacienteId}`;
+  function iniciarAutosaveConsulta() {
+    mostrarIndicador("indicadorConsulta","guardando");
+    clearTimeout(timerConsulta);
+    timerConsulta = setTimeout(()=>{
+      const b = {
+        fecha: document.getElementById("consultaFecha").value,
+        motivo: document.getElementById("consultaMotivo").value,
+        peso: document.getElementById("consultaPeso").value,
+        talla: document.getElementById("consultaTalla").value,
+        sintomas: document.getElementById("consultaSintomas").value,
+        diagnostico: document.getElementById("consultaDiag").value,
+        tratamiento: document.getElementById("consultaTrat").value,
+      };
+      if (b.motivo||b.diagnostico||b.sintomas||b.tratamiento) {
+        localStorage.setItem(BORRADOR_KEY(), JSON.stringify(b));
+        mostrarIndicador("indicadorConsulta","guardado");
+        document.getElementById("borrador-banner").style.display="none";
+      }
+    }, 2000);
+  }
+  function cargarBorrador() {
+    try {
+      const raw = localStorage.getItem(BORRADOR_KEY());
+      if (!raw) return;
+      const b = JSON.parse(raw);
+      if (!b.motivo && !b.diagnostico && !b.sintomas) return;
+      document.getElementById("consultaFecha").value = b.fecha || new Date().toISOString().split("T")[0];
+      document.getElementById("consultaMotivo").value = b.motivo||"";
+      document.getElementById("consultaPeso").value = b.peso||"";
+      document.getElementById("consultaTalla").value = b.talla||"";
+      document.getElementById("consultaSintomas").value = b.sintomas||"";
+      document.getElementById("consultaDiag").value = b.diagnostico||"";
+      document.getElementById("consultaTrat").value = b.tratamiento||"";
+      document.getElementById("borrador-banner").style.display="flex";
+    } catch(e) {}
+  }
+  window.descartarBorrador = function() {
+    localStorage.removeItem(BORRADOR_KEY());
+    limpiarFormConsulta();
+    document.getElementById("borrador-banner").style.display="none";
+  }
+  const _camposConsulta = ["consultaMotivo","consultaPeso","consultaTalla","consultaSintomas","consultaDiag","consultaTrat"];
+  _camposConsulta.forEach(function(id){ const el=document.getElementById(id); if(el) el.addEventListener("input", iniciarAutosaveConsulta); });
+
+  // ── ADJUNTOS ──────────────────────────────────────────────────────────────────
+  async function cargarAdjuntos() {
+    const cont = document.getElementById("listaAdjuntos");
+    try {
+      const q = query(collection(db,"pacientes",pacienteId,"estudios"), orderBy("fecha","desc"));
+      const snap = await getDocs(q);
+      if (snap.empty) { cont.innerHTML = '<div class="empty" style="padding:.8rem 1.1rem;">No hay estudios adjuntos.</div>'; return; }
+      cont.innerHTML = `<div class="adjuntos-lista">${snap.docs.map(d=>{
+        const e = d.data();
+        const esImg = e.tipo && (e.tipo.includes("image") || e.tipo.includes("png") || e.tipo.includes("jpg"));
+        return `<div class="adjunto-item">
+          <span class="adjunto-icon">${esImg?"🖼️":"📄"}</span>
+          <div class="adjunto-info"><div class="adjunto-nombre">${e.nombre}</div><div class="adjunto-fecha">${e.descripcion||""} · ${formatFecha(e.fecha)}</div></div>
+          <button class="btn-ver" onclick="verAdjunto('${d.id}','${e.tipo||""}','${encodeURIComponent(e.nombre||"")}')">Ver</button>
+        </div>`;
+      }).join("")}</div>`;
+    } catch(e) { cont.innerHTML = ""; }
+  }
+
+  window.subirAdjunto = async function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 800000) { alert("Archivo muy grande. Máximo 800KB."); return; }
+    const descripcion = prompt("Descripción (opcional):","") || "";
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      await addDoc(collection(db,"pacientes",pacienteId,"estudios"), {
+        nombre: file.name, tipo: file.type, descripcion,
+        fecha: new Date().toISOString().split("T")[0],
+        data: e.target.result
+      });
+      cargarAdjuntos();
+    };
+    reader.readAsDataURL(file);
+    event.target.value="";
+  }
+
+  window.verAdjunto = async function(id, tipo, nombre) {
+    const snap = await getDoc(doc(db,"pacientes",pacienteId,"estudios",id));
+    if (!snap.exists()) return;
+    const e = snap.data();
+    const esImg = tipo && tipo.includes("image");
+    if (esImg) {
+      abrirVisor(e.data, decodeURIComponent(nombre||""));
+    } else {
+      const win = window.open();
+      win.document.write(`<embed src="${e.data}" width="100%" height="100%" type="application/pdf"/>`);
+    }
+  }
+
+  // ── VISOR IMAGEN ──────────────────────────────────────────────────────────────
+  let visorBrillo=100, visorContraste=100, visorDragging=false, visorStartX=0, visorStartY=0;
+
+  function abrirVisor(src, titulo) {
+    visorBrillo=100; visorContraste=100;
+    const img = document.getElementById("visorImg");
+    img.src = src;
+    document.getElementById("visorTitulo").textContent = titulo||"Imagen";
+    actualizarFiltroVisor();
+    document.getElementById("visorOverlay").classList.add("open");
+  }
+
+  function actualizarFiltroVisor() {
+    document.getElementById("visorImg").style.filter = `brightness(${visorBrillo}%) contrast(${visorContraste}%)`;
+    document.getElementById("visorStats").textContent = `Brillo: ${visorBrillo}% · Contraste: ${visorContraste}%`;
+  }
+
+  window.cerrarVisor = function() { document.getElementById("visorOverlay").classList.remove("open"); }
+  window.resetVisor = function() { visorBrillo=100; visorContraste=100; actualizarFiltroVisor(); }
+
+  const visorWrap = document.getElementById("visorWrap");
+  visorWrap.addEventListener("mousedown", e=>{ visorDragging=true; visorStartX=e.clientX; visorStartY=e.clientY; e.preventDefault(); });
+  visorWrap.addEventListener("mousemove", e=>{
+    if (!visorDragging) return;
+    visorContraste = Math.max(0, Math.min(300, visorContraste + (e.clientX-visorStartX)*0.5));
+    visorBrillo    = Math.max(0, Math.min(300, visorBrillo    - (e.clientY-visorStartY)*0.5));
+    visorStartX=e.clientX; visorStartY=e.clientY;
+    actualizarFiltroVisor();
+  });
+  visorWrap.addEventListener("mouseup", ()=>visorDragging=false);
+  visorWrap.addEventListener("mouseleave", ()=>visorDragging=false);
+  visorWrap.addEventListener("touchstart", e=>{ visorDragging=true; visorStartX=e.touches[0].clientX; visorStartY=e.touches[0].clientY; }, {passive:true});
+  visorWrap.addEventListener("touchmove", e=>{
+    if (!visorDragging) return;
+    visorContraste = Math.max(0, Math.min(300, visorContraste + (e.touches[0].clientX-visorStartX)*0.5));
+    visorBrillo    = Math.max(0, Math.min(300, visorBrillo    - (e.touches[0].clientY-visorStartY)*0.5));
+    visorStartX=e.touches[0].clientX; visorStartY=e.touches[0].clientY;
+    actualizarFiltroVisor();
+  }, {passive:true});
+  visorWrap.addEventListener("touchend", ()=>visorDragging=false);
+
+  // ── DOCUMENTOS ────────────────────────────────────────────────────────────────
+  const docsConfig = {
+    receta:{titulo:"💊 Receta Médica",campos:`<label>Medicamento</label><input type="text" id="dc1" placeholder="Ibuprofeno 200mg/5ml"/><label>Dosis</label><input type="text" id="dc2" placeholder="5ml cada 8hs por 5 días"/><label>Vía</label><select id="dc3"><option>Oral</option><option>Tópica</option><option>Inhalatoria</option></select><label>Observaciones</label><textarea id="dc4"></textarea>`},
+    indicaciones:{titulo:"📝 Indicaciones",campos:`<label>Diagnóstico</label><input type="text" id="dc1" placeholder="Faringitis aguda"/><label>Indicaciones</label><textarea id="dc2" style="min-height:120px;"></textarea><label>Próximo control</label><input type="date" id="dc3"/>`},
+    certificado:{titulo:"📄 Certificado",campos:`<label>Tipo</label><select id="dc1"><option>Apto físico</option><option>Reposo</option><option>Inasistencia escolar</option><option>Vacunación</option></select><label>Días de reposo</label><input type="number" id="dc2" placeholder="3"/><label>Observaciones</label><textarea id="dc3"></textarea>`},
+    factura:{titulo:"🧾 Factura",campos:`<label>Concepto</label><input type="text" id="dc1" placeholder="Consulta pediátrica"/><label>Importe</label><input type="number" id="dc2" placeholder="15000"/><label>Forma de pago</label><select id="dc3"><option>Efectivo</option><option>Transferencia</option><option>Tarjeta</option></select>`}
+  };
+  window.abrirDoc = function(tipo) {
+    docTipo = tipo;
+    const cfg = docsConfig[tipo];
+    document.getElementById("modalDocTitulo").textContent = cfg.titulo;
+    document.getElementById("modalDocBody").innerHTML = `<div style="background:#f7fafc;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:13px;color:#4a5568;">Paciente: <strong>${paciente.apellido}, ${paciente.nombre}</strong> · DNI ${paciente.dni}</div>${cfg.campos}`;
+    document.getElementById("modalDoc").classList.add("open");
+  }
+  window.guardarDocumento = async function() {
+    if (!docTipo) return;
+    await addDoc(collection(db,"pacientes",pacienteId,"documentos"), { tipo:docTipo, fecha:new Date().toISOString().split("T")[0], creadoEn:new Date().toISOString() });
+    cerrarModal("modalDoc");
+  }
+
+  window.cerrarModal = function(id) { document.getElementById(id).classList.remove("open"); }
+
+  // Esperar a que config.js cargue antes de iniciar
+  if (typeof CONFIG === "undefined") {
+    document.getElementById("pacienteHeader").innerHTML = "<div style='padding:1rem;color:red;'>Error: config.js no cargó correctamente.</div>";
+  } else {
+    cargarPaciente();
+  }
+</script>
+</body>
+</html>

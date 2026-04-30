@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="config.js"></script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Turno - Dra. Guerra</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px 20px;
+        }
+        .tarjeta {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 460px;
+            width: 100%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c7bb6; font-size: 20px; text-align: center; margin-bottom: 20px; }
+        label { display: block; color: #555; font-size: 14px; margin-bottom: 5px; }
+        input {
+            width: 100%; padding: 12px;
+            border: 1px solid #ccc; border-radius: 8px;
+            font-size: 15px; margin-bottom: 15px;
+        }
+        input:focus { border-color: #2c7bb6; outline: none; }
+        .btn {
+            width: 100%; padding: 14px;
+            background: #2c7bb6; color: white;
+            border: none; border-radius: 10px;
+            font-size: 16px; cursor: pointer;
+        }
+        .btn:hover { background: #1a5a8a; }
+        .btn:disabled { background: #aaa; cursor: not-allowed; }
+        .volver { display: block; text-align: center; margin-top: 15px; color: #2c7bb6; text-decoration: none; font-size: 14px; }
+
+        /* TURNO INFO */
+        .turno-info {
+            background: #e8f4fd; border-radius: 12px;
+            padding: 16px; margin-bottom: 20px;
+        }
+        .turno-info h3 { color: #2c7bb6; font-size: 15px; margin-bottom: 10px; }
+        .turno-info p { font-size: 14px; color: #333; margin: 5px 0; }
+        .turno-info strong { color: #1a5a8a; }
+
+        /* CHAT */
+        .chat-seccion { margin-top: 20px; }
+        .chat-titulo {
+            font-size: 15px; font-weight: bold;
+            color: #2c7bb6; margin-bottom: 12px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .chat-vence {
+            font-size: 11px; color: #888;
+            font-weight: normal; margin-left: auto;
+        }
+        .chat-mensajes {
+            border: 1px solid #e2e8f0; border-radius: 12px;
+            padding: 12px; min-height: 200px; max-height: 320px;
+            overflow-y: auto; background: #f9fbff;
+            display: flex; flex-direction: column; gap: 10px;
+            margin-bottom: 12px;
+        }
+        .msg-burbuja {
+            max-width: 80%; padding: 10px 14px;
+            border-radius: 14px; font-size: 14px; line-height: 1.4;
+        }
+        .msg-paciente {
+            background: #2c7bb6; color: white;
+            align-self: flex-end; border-bottom-right-radius: 4px;
+        }
+        .msg-dra {
+            background: #e8f4fd; color: #333;
+            align-self: flex-start; border-bottom-left-radius: 4px;
+        }
+        .msg-hora { font-size: 11px; opacity: .7; margin-top: 4px; }
+        .msg-quien { font-size: 11px; font-weight: bold; margin-bottom: 3px; }
+
+        .chat-input-row { display: flex; gap: 8px; }
+        .chat-input-row input {
+            flex: 1; margin: 0; padding: 10px 14px;
+            border-radius: 10px; font-size: 14px;
+        }
+        .btn-enviar {
+            background: #2c7bb6; color: white;
+            border: none; border-radius: 10px;
+            padding: 10px 16px; font-size: 18px;
+            cursor: pointer; flex-shrink: 0;
+        }
+        .btn-enviar:hover { background: #1a5a8a; }
+        .btn-enviar:disabled { background: #aaa; cursor: not-allowed; }
+
+        .chat-cerrado {
+            text-align: center; padding: 20px;
+            color: #888; font-size: 14px;
+            background: #f7fafc; border-radius: 10px;
+        }
+
+        .badge-activo { background: #c6f6d5; color: #276749; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+        .badge-cerrado { background: #fed7d7; color: #c53030; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+
+        #pantalla-busqueda, #pantalla-turno { }
+        .error { color: #e53e3e; font-size: 13px; margin-top: -10px; margin-bottom: 10px; display: none; }
+    </style>
+</head>
+<body>
+<div class="tarjeta">
+
+    <!-- PANTALLA 1: BUSCAR POR DNI -->
+    <div id="pantalla-busqueda">
+        <h1>👤 Mi turno</h1>
+        <label>Ingresá tu DNI para ver tu turno</label>
+        <input type="text" id="inputDni" placeholder="Ej: 52.876.441" />
+        <p class="error" id="errorDni">No encontramos ningún turno con ese DNI.</p>
+        <button class="btn" id="btnBuscar" onclick="buscarTurno()">Buscar turno</button>
+        <a href="index.html" class="volver">← Volver al inicio</a>
+    </div>
+
+    <!-- PANTALLA 2: TURNO + CHAT -->
+    <div id="pantalla-turno" style="display:none;">
+        <h1>📅 Tu turno</h1>
+
+        <div class="turno-info" id="turnoInfo"></div>
+
+        <div class="chat-seccion" id="chatSeccion"></div>
+
+        <a href="index.html" class="volver" style="margin-top:20px;display:block;">← Volver al inicio</a>
+    </div>
+
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAxr6HVePo0BeLyV7-QuH668OpZqVOrm2s",
+        authDomain: "consultorio-pediatrico-30cc2.firebaseapp.com",
+        projectId: "consultorio-pediatrico-30cc2",
+        storageBucket: "consultorio-pediatrico-30cc2.firebasestorage.app",
+        messagingSenderId: "806158143244",
+        appId: "1:806158143244:web:315f13af8d5dc41c0cc329"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Nombre del profesional: fallback a config.js, override desde Firestore
+    let perfil = {
+        titulo:      CONFIG.titulo      || "Dra.",
+        nombre:      CONFIG.nombre      || "",
+        nombreCorto: CONFIG.nombreCorto || "",
+        especialidad: CONFIG.especialidad || ""
+    };
+    getDoc(doc(db, "configuracion", "perfil")).then(snap => {
+        if (snap.exists()) perfil = { ...perfil, ...snap.data() };
+    }).catch(() => {});
+
+    let turnoActual = null;
+
+    window.buscarTurno = async function() {
+        const dni = document.getElementById("inputDni").value.trim().replace(/\./g, "");
+        if (!dni) return;
+
+        const btn = document.getElementById("btnBuscar");
+        btn.disabled = true;
+        btn.textContent = "Buscando...";
+
+        const q = query(collection(db, "turnos"), where("dni", "==", dni));
+        const snap = await getDocs(q);
+
+        // Buscar también con puntos por si se guardó así
+        let docs = snap.docs;
+        if (docs.length === 0) {
+            const q2 = query(collection(db, "turnos"), where("dni", "==", document.getElementById("inputDni").value.trim()));
+            const snap2 = await getDocs(q2);
+            docs = snap2.docs;
+        }
+
+        btn.disabled = false;
+        btn.textContent = "Buscar turno";
+
+        if (docs.length === 0) {
+            document.getElementById("errorDni").style.display = "block";
+            return;
+        }
+
+        // Tomar el turno más reciente
+        docs.sort((a, b) => new Date(b.data().reservadoEn) - new Date(a.data().reservadoEn));
+        turnoActual = { id: docs[0].id, ...docs[0].data() };
+
+        mostrarTurno(turnoActual);
+    }
+
+    function mostrarTurno(t) {
+        document.getElementById("pantalla-busqueda").style.display = "none";
+        document.getElementById("pantalla-turno").style.display = "block";
+
+        const fechaFormateada = new Date(t.fecha + "T00:00:00").toLocaleDateString("es-AR", {
+            weekday: "long", year: "numeric", month: "long", day: "numeric"
+        });
+
+        document.getElementById("turnoInfo").innerHTML = `
+            <h3>📋 Datos del turno</h3>
+            <p><strong>Paciente:</strong> ${t.apellido}, ${t.nombre}</p>
+            <p><strong>Fecha:</strong> ${fechaFormateada}</p>
+            <p><strong>Hora:</strong> ${t.hora}hs</p>
+            <p><strong>Motivo:</strong> ${t.motivo || "—"}</p>
+            <p><strong>Profesional:</strong> ${perfil.titulo} ${perfil.nombre}</p>
+        `;
+
+        // Calcular si el chat está habilitado (10 días desde la fecha del turno)
+        const fechaTurno = new Date(t.fecha + "T00:00:00");
+        const hoy = new Date();
+        const diasDesde = Math.floor((hoy - fechaTurno) / (1000 * 60 * 60 * 24));
+        const chatActivo = diasDesde >= 0 && diasDesde <= 10 && (t.estado === "confirmado" || t.estado === "pendiente-pago");
+        const diasRestantes = 10 - diasDesde;
+
+        const chatSeccion = document.getElementById("chatSeccion");
+
+        if (!chatActivo && diasDesde < 0) {
+            // Turno futuro
+            chatSeccion.innerHTML = `
+                <div class="chat-titulo">💬 Seguimiento <span class="badge-cerrado">No disponible aún</span></div>
+                <div class="chat-cerrado">El chat de seguimiento se habilita el día de tu consulta y está disponible por 10 días.</div>
+            `;
+        } else if (!chatActivo && diasDesde > 10) {
+            // Venció
+            chatSeccion.innerHTML = `
+                <div class="chat-titulo">💬 Seguimiento <span class="badge-cerrado">Cerrado</span></div>
+                <div class="chat-cerrado">El período de seguimiento de 10 días ya finalizó.</div>
+            `;
+        } else {
+            // Chat activo
+            chatSeccion.innerHTML = `
+                <div class="chat-titulo">
+                    💬 Seguimiento
+                    <span class="badge-activo">Activo</span>
+                    <span class="chat-vence">Vence en ${diasRestantes} día${diasRestantes !== 1 ? 's' : ''}</span>
+                </div>
+                <div class="chat-mensajes" id="chatMensajes">
+                    <div style="text-align:center;color:#aaa;font-size:13px;padding:20px 0;">Cargando mensajes...</div>
+                </div>
+                <div class="chat-input-row">
+                    <input type="text" id="inputMensaje" placeholder="Escribí tu mensaje..." onkeydown="if(event.key==='Enter') enviarMensaje()" />
+                    <button class="btn-enviar" onclick="enviarMensaje()">➤</button>
+                </div>
+            `;
+            cargarMensajes(t.id);
+        }
+    }
+
+    function cargarMensajes(turnoId) {
+        const q = query(
+            collection(db, "turnos", turnoId, "mensajes"),
+            orderBy("fecha", "asc")
+        );
+        onSnapshot(q, (snap) => {
+            const cont = document.getElementById("chatMensajes");
+            if (!cont) return;
+            if (snap.empty) {
+                cont.innerHTML = `<div style="text-align:center;color:#aaa;font-size:13px;padding:20px 0;">No hay mensajes aún. Podés escribir tu consulta.</div>`;
+                return;
+            }
+            cont.innerHTML = "";
+            snap.forEach(doc => {
+                const m = doc.data();
+                const esPaciente = m.autor === "paciente";
+                const hora = m.fecha ? new Date(m.fecha).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) : "";
+                const div = document.createElement("div");
+                div.className = "msg-burbuja " + (esPaciente ? "msg-paciente" : "msg-dra");
+                div.innerHTML = `
+                    ${!esPaciente ? `<div class="msg-quien">${perfil.nombreCorto}</div>` : ""}
+                    ${m.texto}
+                    <div class="msg-hora">${hora}</div>
+                `;
+                cont.appendChild(div);
+            });
+            cont.scrollTop = cont.scrollHeight;
+        });
+    }
+
+    window.enviarMensaje = async function() {
+        const input = document.getElementById("inputMensaje");
+        const texto = input.value.trim();
+        if (!texto || !turnoActual) return;
+
+        input.value = "";
+        await addDoc(collection(db, "turnos", turnoActual.id, "mensajes"), {
+            texto,
+            autor: "paciente",
+            fecha: new Date().toISOString()
+        });
+    }
+
+    // Enter para buscar
+    document.getElementById("inputDni").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") window.buscarTurno();
+    });
+</script>
+</body>
+</html>

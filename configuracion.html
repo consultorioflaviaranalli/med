@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script src="config.js"></script>
+  <script src="init.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Configuración – Panel Médico</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+
+    .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .logo-circle { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
+    .topbar h1 { font-size: 17px; font-weight: 600; color: #2d3748; }
+    .topbar h1 span { color: #667eea; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .user-chip { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a5568; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+    .btn-logout { background: none; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 13px; color: #718096; cursor: pointer; }
+    .btn-logout:hover { background: #fff5f5; color: #e53e3e; border-color: #fed7d7; }
+
+    .layout { display: flex; min-height: calc(100vh - 64px); }
+    .sidebar { width: 230px; background: #fff; border-right: 1px solid #e2e8f0; padding: 1.5rem 0; flex-shrink: 0; }
+    .nav-section { padding: 0 1rem 0.5rem; font-size: 11px; font-weight: 600; letter-spacing: .08em; color: #a0aec0; text-transform: uppercase; margin-top: 1rem; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.5rem; font-size: 14px; color: #4a5568; cursor: pointer; text-decoration: none; transition: all .15s; }
+    .nav-item:hover { background: #f7fafc; color: #2d3748; }
+    .nav-item.active { background: #ebf4ff; color: #3182ce; font-weight: 500; border-right: 3px solid #3182ce; }
+    .nav-icon { font-size: 17px; width: 22px; text-align: center; }
+
+    .main { flex: 1; padding: 2rem; overflow-y: auto; max-width: 820px; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header h2 { font-size: 22px; font-weight: 600; color: #2d3748; }
+    .page-header p { font-size: 14px; color: #718096; margin-top: 4px; }
+
+    .seccion { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .seccion-titulo { font-size: 15px; font-weight: 600; color: #2d3748; margin-bottom: 1.2rem; padding-bottom: .75rem; border-bottom: 1px solid #e2e8f0; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+    @media (max-width: 600px) { .form-grid, .form-grid.cols-3 { grid-template-columns: 1fr; } }
+    .campo { display: flex; flex-direction: column; gap: 5px; }
+    .campo label { font-size: 13px; color: #4a5568; font-weight: 500; }
+    .campo input, .campo select { padding: 9px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; color: #2d3748; background: #fff; }
+    .campo input:focus, .campo select:focus { border-color: #667eea; outline: none; }
+    .hint { font-size: 12px; color: #a0aec0; margin-top: 3px; }
+
+    /* Toggle */
+    .toggle { position: relative; width: 40px; height: 22px; background: #e2e8f0; border-radius: 11px; cursor: pointer; transition: background .2s; flex-shrink: 0; display: inline-block; }
+    .toggle.on { background: #667eea; }
+    .toggle::after { content: ''; position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 2px; left: 2px; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+    .toggle.on::after { left: 20px; }
+
+    /* Duración */
+    .duracion-row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #f7fafc; border-radius: 10px; margin-bottom: 1.2rem; font-size: 14px; color: #4a5568; }
+    .duracion-row select { padding: 6px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; color: #2d3748; }
+
+    /* Día card */
+    .dia-card { border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; overflow: hidden; transition: border-color .2s; }
+    .dia-card.activo { border-color: #667eea; }
+    .dia-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+    .dia-nombre { font-size: 15px; font-weight: 600; color: #2d3748; min-width: 90px; }
+    .dia-resumen { font-size: 13px; color: #a0aec0; flex: 1; }
+    .dia-card.activo .dia-resumen { color: #667eea; }
+    .dia-detalle { padding: 0 16px 16px; display: none; }
+    .dia-card.activo .dia-detalle { display: block; }
+
+    /* Tipo bloque */
+    .tipo-dia-bloque { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px; margin-top: 10px; background: #fafbff; }
+    .tipo-dia-bloque.tipo-on { background: #f8f9ff; border-color: #c3d0f7; }
+    .tipo-dia-header { display: flex; align-items: center; gap: 10px; }
+    .tipo-dia-info { display: flex; flex-direction: column; flex: 1; }
+    .tipo-dia-nombre { font-size: 14px; font-weight: 600; color: #2d3748; }
+    .tipo-dia-sub { font-size: 12px; color: #a0aec0; }
+
+    /* Hora row */
+    .btn-guardar { padding: 10px 28px; background: #667eea; color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .btn-guardar:hover { background: #5a67d8; }
+    .btn-guardar:disabled { background: #a0aec0; cursor: not-allowed; }
+    .alerta { padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-top: 12px; display: none; }
+    .alerta.ok    { background: #c6f6d5; color: #276749; display: block; }
+    .alerta.error { background: #fed7d7; color: #c53030; display: block; }
+
+    /* Grilla de slots */
+    .slot-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 12px; }
+    .slot-btn { padding: 8px 4px; border-radius: 8px; font-size: 12px; cursor: pointer; text-align: center; border: 1px solid #e2e8f0; background: #f7fafc; color: #a0aec0; font-family: 'Segoe UI', sans-serif; transition: all .1s; }
+    .slot-btn.on { border-color: #667eea; background: #ebf4ff; color: #667eea; font-weight: 600; }
+    .slot-btn:hover { border-color: #667eea; color: #667eea; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-circle">P</div>
+    <h1>Pedi<span>Med</span></h1>
+  </div>
+  <div class="topbar-right">
+    <div class="user-chip">
+      <div class="user-avatar">VG</div>
+      <span>Dra. Guerra Verónica</span>
+    </div>
+    <button class="btn-logout" onclick="location.href='acceso-dra-Guerra.html'">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item" href="panel-medico.html"><span class="nav-icon">🏠</span> Inicio</a>
+    <a class="nav-item" href="turnos-dra.html"><span class="nav-icon">📅</span> Turnos</a>
+    <a class="nav-item" href="disponibilidad.html"><span class="nav-icon">🗓️</span> Calendario</a>
+    <div class="nav-section">Pacientes</div>
+    <a class="nav-item" href="mis-pacientes.html"><span class="nav-icon">👶</span> Mis Pacientes</a>
+    <a class="nav-item" href="historias-clinicas.html"><span class="nav-icon">📋</span> Historias Clínicas</a>
+    <div class="nav-section">Comunicación</div>
+    <a class="nav-item" href="mensajes.html"><span class="nav-icon">💬</span> Mensajes</a>
+    <div class="nav-section">Sistema</div>
+    <a class="nav-item active" href="configuracion.html"><span class="nav-icon">⚙️</span> Configuración</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>⚙️ Configuración</h2>
+      <p>Editá los datos del profesional y los horarios de atención. Los cambios se aplican automáticamente en la app de turnos.</p>
+    </div>
+
+    <!-- DATOS DEL PROFESIONAL -->
+    <div class="seccion">
+      <div class="seccion-titulo">👤 Datos del profesional</div>
+      <div class="form-grid">
+        <div class="campo">
+          <label>Título</label>
+          <select id="titulo"><option value="Dr.">Dr.</option><option value="Dra." selected>Dra.</option><option value="Lic.">Lic.</option></select>
+        </div>
+        <div class="campo">
+          <label>Nombre completo</label>
+          <input type="text" id="nombre" placeholder="Ej: Guerra Verónica" />
+        </div>
+        <div class="campo">
+          <label>Nombre corto (para mensajes)</label>
+          <input type="text" id="nombreCorto" placeholder="Ej: Dra. Guerra" />
+        </div>
+        <div class="campo">
+          <label>Especialidad</label>
+          <input type="text" id="especialidad" placeholder="Ej: Pediatría" />
+        </div>
+        <div class="campo">
+          <label>Matrícula</label>
+          <input type="text" id="matricula" placeholder="Ej: MP 12345" />
+        </div>
+        <div class="campo">
+          <label>Iniciales (avatar)</label>
+          <input type="text" id="iniciales" placeholder="Ej: VG" maxlength="3" />
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="campo">
+          <label>WhatsApp</label>
+          <input type="text" id="whatsapp" placeholder="Ej: 5491100000000" />
+          <span class="hint">Con código de país (549 = Argentina)</span>
+        </div>
+        <div class="campo">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="dra@ejemplo.com" />
+        </div>
+        <div class="campo" style="grid-column:span 2;">
+          <label>Dirección del consultorio</label>
+          <input type="text" id="direccion" placeholder="Ej: Av. Corrientes 1234, CABA" />
+        </div>
+      </div>
+      <button class="btn-guardar" onclick="guardarPerfil()">Guardar datos</button>
+      <div class="alerta" id="alertaPerfil"></div>
+    </div>
+
+    <!-- HORARIOS -->
+    <div class="seccion">
+      <div class="seccion-titulo">🗓️ Horarios de atención</div>
+
+      <p style="font-size:13px;color:#718096;margin-bottom:12px;">Hacé clic en los horarios para activarlos o desactivarlos. Los horarios sin marcar quedan como corte y los pacientes no podrán reservarlos.</p>
+
+      <div id="diasContainer"></div>
+
+      <button class="btn-guardar" onclick="guardarHorarios()" style="margin-top:8px;">Guardar horarios</button>
+      <div class="alerta" id="alertaHorarios"></div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+  const app = initializeApp(CONFIG.firebase);
+  const db  = getFirestore(app);
+
+  const DIAS_INFO = [
+    { num: 1, nombre: "Lunes"     },
+    { num: 2, nombre: "Martes"    },
+    { num: 3, nombre: "Miércoles" },
+    { num: 4, nombre: "Jueves"    },
+    { num: 5, nombre: "Viernes"   },
+    { num: 6, nombre: "Sábado"    },
+    { num: 0, nombre: "Domingo"   },
+  ];
+
+  const mkDia = () => ({
+    activo: false,
+    presencial:   { activo: true, slots: defaultSlots() },
+    telemedicina: { activo: true, slots: defaultSlots() }
+  });
+
+  const estado = {};
+  DIAS_INFO.forEach(d => {
+    estado[d.num] = mkDia();
+    if (d.num >= 1 && d.num <= 5) estado[d.num].activo = true;
+  });
+
+  function pad(n) { return String(n).padStart(2, '0'); }
+
+  function rangeToSlots(inicio, fin) {
+    const s = [];
+    const sM = inicio.split(':').map(Number).reduce((a,b,i)=>i===0?b*60:a+b,0);
+    const eM = fin === '24:00' ? 1440 : fin.split(':').map(Number).reduce((a,b,i)=>i===0?b*60:a+b,0);
+    for (let m = sM; m < eM; m += 30) s.push(pad(Math.floor(m/60)) + ':' + pad(m%60));
+    return s;
+  }
+
+  function todosSlots() { return rangeToSlots('07:00', '24:00'); }
+  function defaultSlots() { return rangeToSlots('07:00', '20:00'); }
+
+  function resumen(num) {
+    const d = estado[num];
+    const p = [];
+    if (d.presencial.activo   && d.presencial.slots.length)   p.push('🏥 ' + d.presencial.slots.length   + ' turnos');
+    if (d.telemedicina.activo && d.telemedicina.slots.length) p.push('💻 ' + d.telemedicina.slots.length + ' turnos');
+    return p.length ? p.join('  ·  ') : 'Activo';
+  }
+
+  function htmlSlotGrid(num, tipo) {
+    const activos = new Set(estado[num][tipo].slots);
+    return '<div class="slot-grid">'
+      + todosSlots().map(s =>
+          '<button class="slot-btn' + (activos.has(s) ? ' on' : '') + '" onclick="toggleSlot(' + num + ',\'' + tipo + '\',\'' + s + '\',this)">' + s + '</button>'
+        ).join('')
+      + '</div>';
+  }
+
+  function htmlTipo(num, tipo) {
+    const cfg = estado[num][tipo];
+    const esP = tipo === 'presencial';
+    return '<div class="tipo-dia-bloque' + (cfg.activo ? ' tipo-on' : '') + '">'
+      + '<div class="tipo-dia-header">'
+      + '<div class="toggle' + (cfg.activo ? ' on' : '') + '" onclick="toggleTipo(' + num + ',\'' + tipo + '\')"></div>'
+      + '<div class="tipo-dia-info">'
+      + '<span class="tipo-dia-nombre">' + (esP ? '🏥 Presencial' : '💻 Teleconsulta') + '</span>'
+      + '<span class="tipo-dia-sub">' + (esP ? 'Consulta en consultorio' : 'Videollamada por WhatsApp') + '</span>'
+      + '</div></div>'
+      + (cfg.activo ? htmlSlotGrid(num, tipo) : '')
+      + '</div>';
+  }
+
+  function htmlDia(num) {
+    const d = estado[num];
+    const nombre = DIAS_INFO.find(x => x.num === num).nombre;
+    return '<div class="dia-card' + (d.activo ? ' activo' : '') + '" id="card-' + num + '">'
+      + '<div class="dia-header">'
+      + '<div class="toggle' + (d.activo ? ' on' : '') + '" onclick="toggleDia(' + num + ')"></div>'
+      + '<span class="dia-nombre">' + nombre + '</span>'
+      + '<span class="dia-resumen">' + (d.activo ? resumen(num) : 'Sin turnos') + '</span>'
+      + '</div>'
+      + '<div class="dia-detalle">'
+      + htmlTipo(num, 'presencial')
+      + htmlTipo(num, 'telemedicina')
+      + '</div>'
+      + '</div>';
+  }
+
+  function renderDias() {
+    document.getElementById('diasContainer').innerHTML = DIAS_INFO.map(d => htmlDia(d.num)).join('');
+  }
+
+  function reRenderDia(num) {
+    const old = document.getElementById('card-' + num);
+    if (!old) return;
+    const tmp = document.createElement('div');
+    tmp.innerHTML = htmlDia(num);
+    old.parentNode.replaceChild(tmp.firstElementChild, old);
+  }
+
+  window.toggleDia = function(num) {
+    estado[num].activo = !estado[num].activo;
+    reRenderDia(num);
+  };
+
+  window.toggleTipo = function(num, tipo) {
+    estado[num][tipo].activo = !estado[num][tipo].activo;
+    reRenderDia(num);
+  };
+
+  window.toggleSlot = function(num, tipo, slot, btn) {
+    const slots = estado[num][tipo].slots;
+    const idx = slots.indexOf(slot);
+    if (idx >= 0) { slots.splice(idx, 1); btn.classList.remove('on'); }
+    else          { slots.push(slot); slots.sort(); btn.classList.add('on'); }
+    const r = document.querySelector('#card-' + num + ' .dia-resumen');
+    if (r) r.textContent = estado[num].activo ? resumen(num) : 'Sin turnos';
+  };
+
+  async function cargarConfig() {
+    try {
+      const ps = await getDoc(doc(db, 'configuracion', 'perfil'));
+      if (ps.exists()) {
+        const p = ps.data();
+        ['titulo','nombre','nombreCorto','especialidad','matricula','iniciales','whatsapp','email','direccion'].forEach(k => {
+          const el = document.getElementById(k);
+          if (el && p[k]) el.value = p[k];
+        });
+      } else {
+        const map = { titulo: CONFIG.titulo, nombre: CONFIG.nombre, nombreCorto: CONFIG.nombreCorto,
+          especialidad: CONFIG.especialidad, matricula: CONFIG.matricula, iniciales: CONFIG.iniciales,
+          whatsapp: CONFIG.whatsapp, email: CONFIG.email, direccion: CONFIG.direccion };
+        Object.entries(map).forEach(([k, v]) => { const el = document.getElementById(k); if (el && v) el.value = v; });
+      }
+    } catch(e) { console.warn(e); }
+
+    try {
+      const hs = await getDoc(doc(db, 'configuracion', 'horarios'));
+      if (hs.exists()) {
+        const h = hs.data();
+        if (h.dias) {
+          DIAS_INFO.forEach(di => {
+            const src = h.dias[String(di.num)];
+            if (!src) return;
+            estado[di.num].activo = src.activo === true;
+            ['presencial', 'telemedicina'].forEach(t => {
+              if (!src[t]) return;
+              estado[di.num][t].activo = src[t].activo !== false;
+              if (src[t].slots) {
+                estado[di.num][t].slots = src[t].slots;
+              } else if (src[t].franjas && src[t].franjas.length > 0) {
+                const all = [];
+                src[t].franjas.forEach(f => all.push(...rangeToSlots(f.inicio, f.fin)));
+                estado[di.num][t].slots = [...new Set(all)].sort();
+              } else if (src[t].inicio && src[t].fin) {
+                estado[di.num][t].slots = rangeToSlots(src[t].inicio, src[t].fin);
+              }
+            });
+          });
+        } else if (h.diasTrabajados) {
+          DIAS_INFO.forEach(di => {
+            estado[di.num].activo = h.diasTrabajados.includes(di.num);
+            ['presencial', 'telemedicina'].forEach(t => {
+              if (h[t] && h[t].inicio && h[t].fin) {
+                estado[di.num][t].activo = h[t].activo !== false;
+                estado[di.num][t].slots = rangeToSlots(h[t].inicio, h[t].fin);
+              }
+            });
+          });
+        }
+      }
+    } catch(e) { console.warn(e); }
+
+    renderDias();
+  }
+
+  cargarConfig();
+
+  window.guardarPerfil = async function() {
+    const alerta = document.getElementById('alertaPerfil');
+    alerta.className = 'alerta';
+    const datos = {};
+    ['titulo','nombre','nombreCorto','especialidad','matricula','iniciales','whatsapp','email','direccion'].forEach(k => {
+      datos[k] = (document.getElementById(k)?.value || '').trim();
+    });
+    if (!datos.nombre || !datos.especialidad) {
+      alerta.textContent = 'Completá al menos el nombre y la especialidad.';
+      alerta.className = 'alerta error'; return;
+    }
+    try {
+      await setDoc(doc(db, 'configuracion', 'perfil'), datos);
+      alerta.textContent = '✅ Datos guardados.';
+      alerta.className = 'alerta ok';
+    } catch(e) {
+      alerta.textContent = 'Error al guardar. Intentá de nuevo.';
+      alerta.className = 'alerta error';
+    }
+    setTimeout(() => { alerta.className = 'alerta'; }, 4000);
+  };
+
+  window.guardarHorarios = async function() {
+    const alerta = document.getElementById('alertaHorarios');
+    alerta.className = 'alerta';
+    const activos = DIAS_INFO.filter(d => estado[d.num].activo);
+    if (activos.length === 0) {
+      alerta.textContent = 'Activá al menos un día de trabajo.';
+      alerta.className = 'alerta error'; return;
+    }
+    const diasData = {};
+    DIAS_INFO.forEach(d => {
+      const st = estado[d.num];
+      diasData[String(d.num)] = {
+        activo: st.activo,
+        presencial:   { activo: st.presencial.activo,   slots: st.presencial.slots   },
+        telemedicina: { activo: st.telemedicina.activo, slots: st.telemedicina.slots }
+      };
+    });
+    try {
+      await setDoc(doc(db, 'configuracion', 'horarios'), { dias: diasData });
+      alerta.textContent = '✅ Horarios guardados. Se aplican de inmediato en la app de turnos.';
+      alerta.className = 'alerta ok';
+    } catch(e) {
+      alerta.textContent = 'Error al guardar. Intentá de nuevo.';
+      alerta.className = 'alerta error';
+    }
+    setTimeout(() => { alerta.className = 'alerta'; }, 5000);
+  };
+</script>
+</body>
+</html>

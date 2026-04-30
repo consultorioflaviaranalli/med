@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script src="config.js"></script>
+  <script src="init.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Turnos</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+    .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .logo-circle { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
+    .topbar h1 { font-size: 17px; font-weight: 600; color: #2d3748; }
+    .topbar h1 span { color: #667eea; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .badge-online { font-size: 12px; background: #c6f6d5; color: #276749; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+    .user-chip { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a5568; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+    .btn-logout { background: none; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 13px; color: #718096; cursor: pointer; }
+    .btn-logout:hover { background: #fff5f5; color: #e53e3e; }
+    .layout { display: flex; min-height: calc(100vh - 64px); }
+    .sidebar { width: 230px; background: #fff; border-right: 1px solid #e2e8f0; padding: 1.5rem 0; flex-shrink: 0; }
+    .nav-section { padding: 0 1rem 0.5rem; font-size: 11px; font-weight: 600; letter-spacing: .08em; color: #a0aec0; text-transform: uppercase; margin-top: 1rem; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.5rem; font-size: 14px; color: #4a5568; cursor: pointer; text-decoration: none; transition: all .15s; }
+    .nav-item:hover { background: #f7fafc; color: #2d3748; }
+    .nav-item.active { background: #ebf4ff; color: #3182ce; font-weight: 500; border-right: 3px solid #3182ce; }
+    .nav-icon { font-size: 17px; width: 22px; text-align: center; }
+    .main { flex: 1; padding: 2rem; overflow-y: auto; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header h2 { font-size: 22px; font-weight: 600; color: #2d3748; }
+    .page-header p { font-size: 14px; color: #718096; margin-top: 4px; }
+
+    .filtros { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; padding: 1.25rem; margin-bottom: 1.5rem; display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+    .filtro-group { display: flex; flex-direction: column; gap: 5px; }
+    .filtro-label { font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: .05em; }
+    .filtro-group input { padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; }
+    .filtro-group input:focus { border-color: #667eea; }
+    .btn-filtrar { background: #667eea; color: #fff; border: none; padding: 9px 20px; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; }
+    .btn-filtrar:hover { background: #5a67d8; }
+    .btn-hoy { background: #f7fafc; color: #4a5568; border: 1px solid #e2e8f0; padding: 9px 16px; border-radius: 8px; font-size: 14px; cursor: pointer; }
+    .btn-hoy:hover { background: #ebf4ff; color: #3182ce; border-color: #3182ce; }
+
+    .card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; }
+    .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; justify-content: space-between; }
+    .card-titulo { font-size: 14px; font-weight: 600; color: #2d3748; }
+    .card-count { font-size: 13px; color: #718096; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { padding: 10px 16px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: #a0aec0; border-bottom: 1px solid #e2e8f0; text-align: left; white-space: nowrap; }
+    td { padding: 13px 16px; border-bottom: 1px solid #f7fafc; font-size: 14px; color: #4a5568; vertical-align: middle; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #f7fafc; cursor: pointer; }
+
+    .turno-nombre { font-weight: 500; color: #2d3748; }
+    .badge { font-size: 11px; padding: 3px 8px; border-radius: 10px; font-weight: 500; }
+    .badge-confirmado { background: #c6f6d5; color: #276749; }
+    .badge-pendiente { background: #fefcbf; color: #744210; }
+    .badge-teleconsulta { background: #bee3f8; color: #2c5282; }
+    .badge-atendido { background: #e2e8f0; color: #4a5568; }
+
+    .dia-header { background: #f7fafc; padding: 8px 16px; font-size: 12px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid #e2e8f0; }
+
+    .empty { text-align: center; padding: 3rem; color: #a0aec0; font-size: 14px; }
+    .loading { text-align: center; padding: 3rem; color: #a0aec0; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-circle">P</div>
+    <h1>Pedi<span>Med</span></h1>
+  </div>
+  <div class="topbar-right">
+    <span class="badge-online">● En línea</span>
+    <div class="user-chip">
+      <div class="user-avatar">VG</div>
+      <span>Dra. Guerra Verónica</span>
+    </div>
+    <button class="btn-logout" onclick="location.href='acceso-dra-guerra.html'">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item" href="panel-medico.html"><span class="nav-icon">🏠</span> Inicio</a>
+    <a class="nav-item active" href="turnos-dra.html"><span class="nav-icon">📅</span> Turnos</a>
+    <a class="nav-item" href="disponibilidad.html"><span class="nav-icon">🗓️</span> Calendario</a>
+    <div class="nav-section">Pacientes</div>
+    <a class="nav-item" href="mis-pacientes.html"><span class="nav-icon">👶</span> Mis Pacientes</a>
+    <a class="nav-item" href="historias-clinicas.html"><span class="nav-icon">📋</span> Historias Clínicas</a>
+    <div class="nav-section">Comunicación</div>
+    <a class="nav-item" href="mensajes.html"><span class="nav-icon">💬</span> Mensajes</a>
+    <div class="nav-section">Sistema</div>
+    <a class="nav-item" href="configuracion.html"><span class="nav-icon">⚙️</span> Configuración</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>📅 Turnos</h2>
+      <p>Listado de todos los turnos agendados</p>
+    </div>
+
+    <div class="filtros">
+      <div class="filtro-group">
+        <span class="filtro-label">Desde</span>
+        <input type="date" id="filtroDesde" />
+      </div>
+      <div class="filtro-group">
+        <span class="filtro-label">Hasta</span>
+        <input type="date" id="filtroHasta" />
+      </div>
+      <button class="btn-filtrar" onclick="filtrar()">Buscar</button>
+      <button class="btn-hoy" onclick="filtrarHoy()">Hoy</button>
+      <button class="btn-hoy" onclick="filtrarSemana()">Esta semana</button>
+      <button class="btn-hoy" onclick="filtrarProximos()">Próximos</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-titulo" id="cardTitulo">Todos los turnos</div>
+        <div class="card-count" id="cardCount"></div>
+      </div>
+      <div id="tablaTurnos"><div class="loading">Cargando turnos...</div></div>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+  const app = initializeApp(CONFIG.firebase);
+  const db = getFirestore(app);
+
+  let todosTurnos = [];
+  let todosPacientes = [];
+  const hoy = new Date().toISOString().split("T")[0];
+
+  function formatFecha(f) {
+    if (!f) return "—";
+    return new Date(f+"T00:00:00").toLocaleDateString("es-AR", {weekday:"short", day:"numeric", month:"short", year:"numeric"});
+  }
+
+  async function cargar() {
+    const [tSnap, pSnap] = await Promise.all([
+      getDocs(collection(db, "turnos")),
+      getDocs(collection(db, "pacientes"))
+    ]);
+    todosTurnos = tSnap.docs.map(d => ({ id: d.id, ...d.data() })).filter(t => t.apellido);
+    todosPacientes = pSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    filtrarHoy();
+  }
+
+  function renderTurnos(turnos, titulo) {
+    document.getElementById("cardTitulo").textContent = titulo;
+    document.getElementById("cardCount").textContent = turnos.length + " turno" + (turnos.length !== 1 ? "s" : "");
+    const cont = document.getElementById("tablaTurnos");
+
+    if (!turnos.length) {
+      cont.innerHTML = '<div class="empty">No hay turnos en ese período.</div>';
+      return;
+    }
+
+    turnos.sort((a,b) => a.fecha > b.fecha ? 1 : a.fecha < b.fecha ? -1 : a.hora > b.hora ? 1 : -1);
+
+    // Agrupar por fecha
+    const porFecha = {};
+    turnos.forEach(t => {
+      if (!porFecha[t.fecha]) porFecha[t.fecha] = [];
+      porFecha[t.fecha].push(t);
+    });
+
+    let html = '<table><thead><tr><th>Hora</th><th>Paciente</th><th>DNI</th><th>Motivo</th><th>Estado</th></tr></thead><tbody>';
+
+    Object.keys(porFecha).sort().forEach(fecha => {
+      html += `<tr><td colspan="5" class="dia-header">📅 ${formatFecha(fecha)}</td></tr>`;
+      porFecha[fecha].forEach(t => {
+        const paciente = todosPacientes.find(p => p.dni === t.dni);
+        const link = paciente ? `ficha-paciente.html?id=${paciente.id}` : "historias-clinicas.html";
+        const badge = t.tipo === "teleconsulta"
+          ? `<span class="badge badge-teleconsulta">Teleconsulta</span>`
+          : t.estado === "confirmado"
+            ? `<span class="badge badge-confirmado">Confirmado</span>`
+            : t.estado === "atendido"
+              ? `<span class="badge badge-atendido">Atendido</span>`
+              : `<span class="badge badge-pendiente">Pendiente</span>`;
+        html += `<tr onclick="location.href='${link}'">
+          <td><strong>${t.hora}hs</strong></td>
+          <td><span class="turno-nombre">${t.apellido}, ${t.nombre}</span></td>
+          <td>${t.dni||"—"}</td>
+          <td>${t.motivo||"—"}</td>
+          <td>${badge}</td>
+        </tr>`;
+      });
+    });
+
+    html += '</tbody></table>';
+    cont.innerHTML = html;
+  }
+
+  window.filtrar = function() {
+    const desde = document.getElementById("filtroDesde").value;
+    const hasta = document.getElementById("filtroHasta").value;
+    if (!desde && !hasta) { renderTurnos(todosTurnos, "Todos los turnos"); return; }
+    const filtrados = todosTurnos.filter(t => {
+      if (desde && t.fecha < desde) return false;
+      if (hasta && t.fecha > hasta) return false;
+      return true;
+    });
+    renderTurnos(filtrados, "Turnos del " + (desde||"inicio") + " al " + (hasta||"fin"));
+  }
+
+  window.filtrarHoy = function() {
+    document.getElementById("filtroDesde").value = hoy;
+    document.getElementById("filtroHasta").value = hoy;
+    renderTurnos(todosTurnos.filter(t => t.fecha === hoy), "Turnos de hoy");
+  }
+
+  window.filtrarSemana = function() {
+    const lunes = new Date();
+    lunes.setDate(lunes.getDate() - lunes.getDay() + 1);
+    const domingo = new Date(lunes);
+    domingo.setDate(lunes.getDate() + 6);
+    const desde = lunes.toISOString().split("T")[0];
+    const hasta = domingo.toISOString().split("T")[0];
+    document.getElementById("filtroDesde").value = desde;
+    document.getElementById("filtroHasta").value = hasta;
+    renderTurnos(todosTurnos.filter(t => t.fecha >= desde && t.fecha <= hasta), "Esta semana");
+  }
+
+  window.filtrarProximos = function() {
+    document.getElementById("filtroDesde").value = hoy;
+    document.getElementById("filtroHasta").value = "";
+    renderTurnos(todosTurnos.filter(t => t.fecha >= hoy), "Próximos turnos");
+  }
+
+  cargar();
+</script>
+<script src="sidebar-mobile.js"></script>
+</body>
+</html>

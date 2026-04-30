@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Datos del paciente</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .tarjeta {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c7bb6;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .turno-resumen {
+            background: #e8f4fd;
+            border: 1px solid #2c7bb6;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: #2c7bb6;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        .turno-resumen span {
+            display: block;
+            font-size: 12px;
+            font-weight: normal;
+            color: #555;
+            margin-top: 4px;
+        }
+        label {
+            display: block;
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 15px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        input:focus, select:focus, textarea:focus {
+            border-color: #2c7bb6;
+            outline: none;
+        }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background-color: #2c7bb6;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+        .btn:hover { background-color: #1a5a8a; }
+        .btn:disabled { background-color: #aaa; cursor: not-allowed; }
+        .volver {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #2c7bb6;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .error { color: red; font-size: 13px; margin-top: -10px; margin-bottom: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="tarjeta">
+        <h1>📋 Datos del paciente</h1>
+
+        <div class="turno-resumen" id="resumenTurno">
+            Cargando turno...
+        </div>
+
+        <label>Apellido *</label>
+        <input type="text" id="apellido" placeholder="Ingresá el apellido" />
+
+        <label>Nombre *</label>
+        <input type="text" id="nombre" placeholder="Ingresá el nombre" />
+
+        <label>DNI del paciente *</label>
+        <input type="text" id="dni" placeholder="Ej: 55.123.456" />
+
+        <label>Fecha de nacimiento *</label>
+        <input type="date" id="fechaNac" min="1990-01-01" />
+
+        <label>Celular de contacto *</label>
+        <input type="tel" id="celular" placeholder="Ej: 11 4521-3390" />
+
+        <label>Nombre del padre / madre / tutor *</label>
+        <input type="text" id="tutor" placeholder="Ej: Carolina López" />
+
+        <label>Motivo de consulta * (podés marcar más de uno)</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#333;margin:0;cursor:pointer;"><input type="checkbox" class="motivo-check" value="Fiebre" style="width:auto;margin:0;"> Fiebre</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#333;margin:0;cursor:pointer;"><input type="checkbox" class="motivo-check" value="Dolor de cabeza" style="width:auto;margin:0;"> Dolor de cabeza</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#333;margin:0;cursor:pointer;"><input type="checkbox" class="motivo-check" value="Dolor de panza" style="width:auto;margin:0;"> Dolor de panza</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#333;margin:0;cursor:pointer;"><input type="checkbox" class="motivo-check" value="Sensibilidad a la luz" style="width:auto;margin:0;"> Sensibilidad a la luz</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#333;margin:0;cursor:pointer;"><input type="checkbox" class="motivo-check" value="Descompostura / diarrea" style="width:auto;margin:0;"> Descompostura / diarrea</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#333;margin:0;cursor:pointer;"><input type="checkbox" class="motivo-check" value="Tos" style="width:auto;margin:0;"> Tos</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#333;margin:0;cursor:pointer;"><input type="checkbox" class="motivo-check" value="Mocos" style="width:auto;margin:0;"> Mocos</label>
+            <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#333;margin:0;cursor:pointer;"><input type="checkbox" class="motivo-check" value="Dolor de garganta" style="width:auto;margin:0;"> Dolor de garganta</label>
+        </div>
+        <textarea id="motivo" rows="2" placeholder="Otros síntomas o aclaraciones..."></textarea>
+
+        <p class="error" id="errorMsg">Por favor completá todos los campos y seleccioná al menos un síntoma.</p>
+
+        <button class="btn" id="btnConfirmar" onclick="confirmar()">Confirmar turno →</button>
+        <a href="reservar-turno.html" class="volver">← Volver al calendario</a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs, updateDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        const app = initializeApp(CONFIG.firebase);
+        const db = getFirestore(app);
+
+        // Nombre del profesional: primero desde Firestore, fallback a config.js
+        let perfil = {
+            titulo:       CONFIG.titulo       || "Dra.",
+            nombre:       CONFIG.nombre       || "",
+            nombreCorto:  CONFIG.nombreCorto  || "",
+            especialidad: CONFIG.especialidad || ""
+        };
+        getDoc(doc(db, "configuracion", "perfil")).then(snap => {
+            if (snap.exists()) perfil = { ...perfil, ...snap.data() };
+            actualizarResumen();
+        }).catch(() => {});
+
+        document.getElementById("fechaNac").max = new Date().toISOString().split("T")[0];
+
+        const params = new URLSearchParams(window.location.search);
+        const fecha  = params.get("fecha");
+        const hora   = params.get("hora");
+        const tipo   = params.get("tipo") || "presencial";
+        const tipoLabel = tipo === "teleconsulta" ? "💻 Teleconsulta" : "🏥 Presencial";
+
+        function actualizarResumen() {
+            const resumen = document.getElementById("resumenTurno");
+            if (fecha && hora) {
+                const fechaFormateada = new Date(fecha + "T00:00:00").toLocaleDateString("es-AR", {
+                    weekday: "long", year: "numeric", month: "long", day: "numeric"
+                });
+                resumen.innerHTML = `📅 ${fechaFormateada} a las ${hora}hs
+                    <span>${perfil.titulo} ${perfil.nombre} · ${perfil.especialidad} · ${tipoLabel}</span>`;
+            } else {
+                resumen.innerHTML = `⚠️ No se seleccionó fecha y hora <span><a href="reservar-turno.html">Volvé al calendario</a></span>`;
+                document.getElementById("btnConfirmar").disabled = true;
+            }
+        }
+
+        // Mostrar resumen inicial con datos de config.js mientras carga Firestore
+        actualizarResumen();
+
+        window.confirmar = async function() {
+            const apellido  = document.getElementById("apellido").value.trim();
+            const nombre    = document.getElementById("nombre").value.trim();
+            const dni       = document.getElementById("dni").value.trim();
+            const fechaNac  = document.getElementById("fechaNac").value;
+            const celular   = document.getElementById("celular").value.trim();
+            const tutor     = document.getElementById("tutor").value.trim();
+            const errorMsg  = document.getElementById("errorMsg");
+
+            const checks     = [...document.querySelectorAll(".motivo-check:checked")].map(c => c.value);
+            const motivoExtra = document.getElementById("motivo").value.trim();
+            const motivo     = [...checks, ...(motivoExtra ? [motivoExtra] : [])].join(", ");
+
+            if (!apellido || !nombre || !dni || !fechaNac || !celular || !tutor || checks.length === 0) {
+                errorMsg.style.display = "block";
+                return;
+            }
+            errorMsg.style.display = "none";
+
+            const btn = document.getElementById("btnConfirmar");
+            btn.disabled = true;
+            btn.textContent = "Guardando...";
+
+            try {
+                // Buscar si ya existe un turno pendiente-pago con esa fecha/hora y actualizarlo
+                const q = query(
+                    collection(db, "turnos"),
+                    where("fecha", "==", fecha),
+                    where("hora",  "==", hora),
+                    where("estado", "==", "pendiente-pago")
+                );
+                const snap = await getDocs(q);
+
+                const datosPaciente = {
+                    apellido, nombre, dni, fechaNac,
+                    celular, tutor, motivo,
+                    fecha, hora,
+                    tipo: tipo,
+                    estado: "pendiente-pago",
+                    reservadoEn: new Date().toISOString(),
+                    chatHabilitado: false,
+                    chatVence: null
+                };
+
+                if (!snap.empty) {
+                    await updateDoc(doc(db, "turnos", snap.docs[0].id), datosPaciente);
+                } else {
+                    await addDoc(collection(db, "turnos"), datosPaciente);
+                }
+
+                localStorage.setItem("turnoActual", JSON.stringify({ apellido, nombre, dni, fecha, hora }));
+
+                const fechaFormateada = new Date(fecha + "T00:00:00").toLocaleDateString("es-AR", {
+                    weekday: "long", year: "numeric", month: "long", day: "numeric"
+                });
+
+                const esTeleconsulta = tipo === "teleconsulta";
+
+                document.querySelector(".tarjeta").innerHTML = `
+                    <div style="text-align:center;padding:20px 0;">
+                        <div style="font-size:60px;margin-bottom:16px;">✅</div>
+                        <h2 style="color:#2c7bb6;font-size:20px;margin-bottom:8px;">¡Turno registrado!</h2>
+                        <p style="color:#555;font-size:15px;margin-bottom:20px;">Te esperamos en la consulta.</p>
+                        <div style="background:#e8f4fd;border-radius:12px;padding:16px;margin-bottom:24px;text-align:left;">
+                            <p style="margin:6px 0;font-size:14px;color:#333;"><strong>Paciente:</strong> ${apellido}, ${nombre}</p>
+                            <p style="margin:6px 0;font-size:14px;color:#333;"><strong>Fecha:</strong> ${fechaFormateada}</p>
+                            <p style="margin:6px 0;font-size:14px;color:#333;"><strong>Hora:</strong> ${hora}hs</p>
+                            <p style="margin:6px 0;font-size:14px;color:#333;"><strong>Tipo:</strong> ${tipoLabel}</p>
+                            <p style="margin:6px 0;font-size:14px;color:#333;"><strong>Profesional:</strong> ${perfil.titulo} ${perfil.nombre}</p>
+                        </div>
+                        ${esTeleconsulta ? `
+                        <div style="background:#f0fff4;border:1px solid #9ae6b4;border-radius:12px;padding:14px;margin-bottom:20px;text-align:left;">
+                            <p style="font-size:14px;color:#276749;font-weight:600;margin-bottom:6px;">📱 Consulta online</p>
+                            <p style="font-size:13px;color:#2d6a4f;line-height:1.6;">${perfil.nombreCorto} se comunicará con vos por <strong>WhatsApp</strong> al número que registraste, a la hora del turno.</p>
+                        </div>` : `
+                        <div style="background:#f0fff4;border:1px solid #9ae6b4;border-radius:12px;padding:14px;margin-bottom:20px;text-align:left;">
+                            <p style="font-size:14px;color:#276749;font-weight:600;margin-bottom:6px;">🏥 Consulta presencial</p>
+                            <p style="font-size:13px;color:#2d6a4f;line-height:1.6;">Recordá concurrir al consultorio a la hora indicada.</p>
+                        </div>`}
+                        <p style="color:#888;font-size:13px;margin-bottom:20px;">Pronto conectaremos el pago online.</p>
+                        <a href="index.html" style="display:inline-block;background:#2c7bb6;color:white;padding:12px 30px;border-radius:10px;text-decoration:none;font-size:15px;">Volver al inicio</a>
+                    </div>
+                `;
+
+            } catch (e) {
+                console.error(e);
+                alert("Error al guardar el turno. Intentá de nuevo.");
+                btn.disabled = false;
+                btn.textContent = "Confirmar turno →";
+            }
+        }
+    </script>
+</body>
+</html>

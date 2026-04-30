@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script src="config.js"></script>
+  <script src="init.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Disponibilidad</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+
+    /* TOPBAR */
+    .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .logo-circle { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
+    .topbar h1 { font-size: 17px; font-weight: 600; color: #2d3748; }
+    .topbar h1 span { color: #667eea; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .badge-online { font-size: 12px; background: #c6f6d5; color: #276749; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+    .user-chip { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a5568; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+    .btn-logout { background: none; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 13px; color: #718096; cursor: pointer; }
+    .btn-logout:hover { background: #fff5f5; color: #e53e3e; }
+
+    /* LAYOUT */
+    .layout { display: flex; min-height: calc(100vh - 64px); }
+    .sidebar { width: 230px; background: #fff; border-right: 1px solid #e2e8f0; padding: 1.5rem 0; flex-shrink: 0; }
+    .nav-section { padding: 0 1rem 0.5rem; font-size: 11px; font-weight: 600; letter-spacing: .08em; color: #a0aec0; text-transform: uppercase; margin-top: 1rem; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.5rem; font-size: 14px; color: #4a5568; text-decoration: none; transition: all .15s; }
+    .nav-item:hover { background: #f7fafc; color: #2d3748; }
+    .nav-item.active { background: #ebf4ff; color: #3182ce; font-weight: 500; border-right: 3px solid #3182ce; }
+    .nav-icon { font-size: 17px; width: 22px; text-align: center; }
+    .main { flex: 1; padding: 2rem; overflow-y: auto; max-width: 860px; }
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header h2 { font-size: 22px; font-weight: 600; color: #2d3748; }
+    .page-header p { font-size: 14px; color: #718096; margin-top: 4px; }
+
+    /* SLOT GLOBAL */
+    .slot-global { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 1.1rem 1.4rem; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+    .slot-global-label { font-size: 13px; font-weight: 600; color: #2d3748; }
+    .slot-select { padding: 7px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; color: #2d3748; outline: none; background: #f7fafc; cursor: pointer; }
+    .slot-select:focus { border-color: #667eea; }
+
+    /* CARDS DE DÍA */
+    .dia-card { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 10px; overflow: hidden; transition: box-shadow .2s; }
+    .dia-card.activo { border-color: #667eea; box-shadow: 0 2px 12px rgba(102,126,234,.12); }
+
+    /* HEADER DEL DÍA */
+    .dia-header { display: flex; align-items: center; gap: 14px; padding: 1rem 1.25rem; cursor: pointer; user-select: none; }
+    .dia-toggle { position: relative; width: 44px; height: 24px; flex-shrink: 0; }
+    .dia-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .dia-toggle-track { position: absolute; inset: 0; background: #e2e8f0; border-radius: 12px; transition: background .2s; cursor: pointer; }
+    .dia-toggle input:checked + .dia-toggle-track { background: #667eea; }
+    .dia-toggle-thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); pointer-events: none; }
+    .dia-toggle input:checked ~ .dia-toggle-thumb { transform: translateX(20px); }
+    .dia-nombre { font-size: 16px; font-weight: 600; color: #2d3748; min-width: 100px; }
+    .dia-resumen { font-size: 12px; color: #a0aec0; flex: 1; }
+    .dia-resumen.activo { color: #667eea; }
+
+    /* BODY DEL DÍA */
+    .dia-body { display: none; padding: 0 1.25rem 1.25rem; border-top: 1px solid #f0f4f8; }
+    .dia-body.open { display: block; }
+
+    /* BLOQUES PRESENCIAL / TELECONSULTA */
+    .modalidad-bloque { border-radius: 10px; padding: .9rem 1rem; margin-top: .9rem; border: 1px solid #e2e8f0; }
+    .modalidad-bloque.presencial { background: #f7fafc; }
+    .modalidad-bloque.teleconsulta { background: #f0f7ff; border-color: #bee3f8; }
+
+    .modalidad-header { display: flex; align-items: center; gap: 10px; margin-bottom: .75rem; }
+    .modalidad-toggle { position: relative; width: 36px; height: 20px; flex-shrink: 0; }
+    .modalidad-toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+    .modalidad-toggle-track { position: absolute; inset: 0; background: #e2e8f0; border-radius: 10px; transition: background .2s; cursor: pointer; }
+    .modalidad-toggle input:checked + .modalidad-toggle-track { background: #48bb78; }
+    .modalidad-toggle input.tc:checked + .modalidad-toggle-track { background: #4299e1; }
+    .modalidad-toggle-thumb { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; background: #fff; border-radius: 50%; transition: transform .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); pointer-events: none; }
+    .modalidad-toggle input:checked ~ .modalidad-toggle-thumb { transform: translateX(16px); }
+    .modalidad-titulo { font-size: 13px; font-weight: 700; color: #2d3748; }
+    .modalidad-subtitulo { font-size: 11px; color: #a0aec0; }
+
+    .modalidad-campos { display: none; }
+    .modalidad-campos.open { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+
+    .campo-label { font-size: 11px; color: #718096; text-transform: uppercase; letter-spacing: .04em; font-weight: 600; margin-bottom: 4px; }
+    .hora-select { padding: 7px 10px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; color: #2d3748; outline: none; background: #fff; cursor: pointer; }
+    .hora-select:focus { border-color: #667eea; }
+    .campo-wrap { display: flex; flex-direction: column; }
+    .separador-hora { font-size: 16px; color: #a0aec0; padding-top: 18px; }
+
+    /* ACCIONES */
+    .acciones { display: flex; align-items: center; gap: 12px; margin-top: 1.5rem; padding-bottom: 2rem; }
+    .btn-guardar { background: #667eea; color: #fff; border: none; padding: 12px 28px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .btn-guardar:hover { background: #5a67d8; }
+    .btn-guardar:disabled { background: #a0aec0; cursor: not-allowed; }
+    .save-status { font-size: 13px; display: flex; align-items: center; gap: 6px; }
+    .save-status.ok { color: #38a169; }
+    .save-status.error { color: #e53e3e; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-circle">P</div>
+    <h1>Pedi<span>Med</span></h1>
+  </div>
+  <div class="topbar-right">
+    <span class="badge-online">● En línea</span>
+    <div class="user-chip">
+      <div class="user-avatar">VG</div>
+      <span>Dra. Guerra Verónica</span>
+    </div>
+    <button class="btn-logout" onclick="location.href='acceso-dra-guerra.html'">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item" href="panel-medico.html"><span class="nav-icon">🏠</span> Inicio</a>
+    <a class="nav-item" href="turnos-dra.html"><span class="nav-icon">📅</span> Turnos</a>
+    <a class="nav-item active" href="disponibilidad.html"><span class="nav-icon">🗓️</span> Calendario</a>
+    <div class="nav-section">Pacientes</div>
+    <a class="nav-item" href="mis-pacientes.html"><span class="nav-icon">👶</span> Mis Pacientes</a>
+    <a class="nav-item" href="historias-clinicas.html"><span class="nav-icon">📋</span> Historias Clínicas</a>
+    <div class="nav-section">Comunicación</div>
+    <a class="nav-item" href="mensajes.html"><span class="nav-icon">💬</span> Mensajes</a>
+    <div class="nav-section">Sistema</div>
+    <a class="nav-item" href="configuracion.html"><span class="nav-icon">⚙️</span> Configuración</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>🗓️ Disponibilidad de turnos</h2>
+      <p>Configurá qué días y horarios aceptás turnos presenciales y teleconsultas.</p>
+    </div>
+
+    <!-- DURACIÓN DEL SLOT -->
+    <div class="slot-global">
+      <span class="slot-global-label">⏱️ Duración de cada turno:</span>
+      <select class="slot-select" id="duracionSlot">
+        <option value="15">15 minutos</option>
+        <option value="20">20 minutos</option>
+        <option value="30" selected>30 minutos</option>
+        <option value="45">45 minutos</option>
+        <option value="60">1 hora</option>
+      </select>
+      <span style="font-size:12px;color:#a0aec0;">Aplica a todos los días</span>
+    </div>
+
+    <!-- DÍAS -->
+    <div id="diasContainer"></div>
+
+    <div class="acciones">
+      <button class="btn-guardar" id="btnGuardar" onclick="guardarDisponibilidad()">💾 Guardar disponibilidad</button>
+      <span id="saveStatus" style="display:none;" class="save-status"></span>
+    </div>
+  </main>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+  const app = initializeApp(CONFIG.firebase);
+  const db = getFirestore(app);
+
+  const DIAS = [
+    { id: "lunes",     nombre: "Lunes" },
+    { id: "martes",    nombre: "Martes" },
+    { id: "miercoles", nombre: "Miércoles" },
+    { id: "jueves",    nombre: "Jueves" },
+    { id: "viernes",   nombre: "Viernes" },
+    { id: "sabado",    nombre: "Sábado" },
+    { id: "domingo",   nombre: "Domingo" },
+  ];
+
+  // Genera opciones de horario de 07:00 a 22:00
+  function generarHoras() {
+    const horas = [];
+    for (let h = 7; h <= 22; h++) {
+      horas.push(String(h).padStart(2,"0") + ":00");
+      if (h < 22) horas.push(String(h).padStart(2,"0") + ":30");
+    }
+    return horas;
+  }
+
+  function selectHoras(id, selected, cssClass) {
+    const horas = generarHoras();
+    return `<select class="hora-select ${cssClass||""}" id="${id}">
+      ${horas.map(h => `<option value="${h}" ${h===selected?"selected":""}>${h}</option>`).join("")}
+    </select>`;
+  }
+
+  // Renderiza los 7 días
+  function renderDias(datos) {
+    const cont = document.getElementById("diasContainer");
+    cont.innerHTML = DIAS.map(dia => {
+      const d = datos[dia.id] || {};
+      const activo = !!d.activo;
+      const pActivo = !!d.presencial?.activo;
+      const tActivo = !!d.teleconsulta?.activo;
+      const pDesde = d.presencial?.desde || "09:00";
+      const pHasta = d.presencial?.hasta || "13:00";
+      const tDesde = d.teleconsulta?.desde || "17:00";
+      const tHasta = d.teleconsulta?.hasta || "20:00";
+
+      let resumen = "Sin turnos configurados";
+      if (activo) {
+        const partes = [];
+        if (pActivo) partes.push(`🏥 ${pDesde}–${pHasta}`);
+        if (tActivo) partes.push(`📱 ${tDesde}–${tHasta}`);
+        resumen = partes.length ? partes.join("  ·  ") : "Activado — sin modalidades";
+      }
+
+      return `
+      <div class="dia-card ${activo?"activo":""}" id="card_${dia.id}">
+        <div class="dia-header" onclick="toggleDia('${dia.id}')">
+          <label class="dia-toggle" onclick="event.stopPropagation()">
+            <input type="checkbox" id="toggle_${dia.id}" ${activo?"checked":""} onchange="onToggleDia('${dia.id}')">
+            <div class="dia-toggle-track"></div>
+            <div class="dia-toggle-thumb"></div>
+          </label>
+          <span class="dia-nombre">${dia.nombre}</span>
+          <span class="dia-resumen ${activo?"activo":""}" id="resumen_${dia.id}">${resumen}</span>
+          <span style="color:#a0aec0;font-size:18px;" id="arrow_${dia.id}">${activo?"▾":"▸"}</span>
+        </div>
+
+        <div class="dia-body ${activo?"open":""}" id="body_${dia.id}">
+
+          <!-- PRESENCIAL -->
+          <div class="modalidad-bloque presencial">
+            <div class="modalidad-header">
+              <label class="modalidad-toggle">
+                <input type="checkbox" id="pActivo_${dia.id}" ${pActivo?"checked":""} onchange="onToggleModalidad('${dia.id}')">
+                <div class="modalidad-toggle-track"></div>
+                <div class="modalidad-toggle-thumb"></div>
+              </label>
+              <div>
+                <div class="modalidad-titulo">🏥 Presencial</div>
+                <div class="modalidad-subtitulo">Consulta en consultorio</div>
+              </div>
+            </div>
+            <div class="modalidad-campos ${pActivo?"open":""}" id="pCampos_${dia.id}">
+              <div class="campo-wrap">
+                <div class="campo-label">Desde</div>
+                ${selectHoras("pDesde_"+dia.id, pDesde)}
+              </div>
+              <div class="separador-hora">→</div>
+              <div class="campo-wrap">
+                <div class="campo-label">Hasta</div>
+                ${selectHoras("pHasta_"+dia.id, pHasta)}
+              </div>
+            </div>
+          </div>
+
+          <!-- TELECONSULTA -->
+          <div class="modalidad-bloque teleconsulta">
+            <div class="modalidad-header">
+              <label class="modalidad-toggle">
+                <input type="checkbox" class="tc" id="tActivo_${dia.id}" ${tActivo?"checked":""} onchange="onToggleModalidad('${dia.id}')">
+                <div class="modalidad-toggle-track"></div>
+                <div class="modalidad-toggle-thumb"></div>
+              </label>
+              <div>
+                <div class="modalidad-titulo">📱 Teleconsulta</div>
+                <div class="modalidad-subtitulo">Videollamada por WhatsApp</div>
+              </div>
+            </div>
+            <div class="modalidad-campos ${tActivo?"open":""}" id="tCampos_${dia.id}">
+              <div class="campo-wrap">
+                <div class="campo-label">Desde</div>
+                ${selectHoras("tDesde_"+dia.id, tDesde)}
+              </div>
+              <div class="separador-hora">→</div>
+              <div class="campo-wrap">
+                <div class="campo-label">Hasta</div>
+                ${selectHoras("tHasta_"+dia.id, tHasta)}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>`;
+    }).join("");
+  }
+
+  // Toggle día activo/inactivo
+  window.onToggleDia = function(diaId) {
+    const activo = document.getElementById("toggle_"+diaId).checked;
+    const card = document.getElementById("card_"+diaId);
+    const body = document.getElementById("body_"+diaId);
+    const arrow = document.getElementById("arrow_"+diaId);
+    card.classList.toggle("activo", activo);
+    body.classList.toggle("open", activo);
+    arrow.textContent = activo ? "▾" : "▸";
+    actualizarResumen(diaId);
+  }
+
+  // Toggle abrir/cerrar body del día
+  window.toggleDia = function(diaId) {
+    const activo = document.getElementById("toggle_"+diaId).checked;
+    if (!activo) return;
+    const body = document.getElementById("body_"+diaId);
+    const arrow = document.getElementById("arrow_"+diaId);
+    const open = body.classList.toggle("open");
+    arrow.textContent = open ? "▾" : "▸";
+  }
+
+  // Toggle modalidad presencial/teleconsulta
+  window.onToggleModalidad = function(diaId) {
+    const pActivo = document.getElementById("pActivo_"+diaId).checked;
+    const tActivo = document.getElementById("tActivo_"+diaId).checked;
+    document.getElementById("pCampos_"+diaId).classList.toggle("open", pActivo);
+    document.getElementById("tCampos_"+diaId).classList.toggle("open", tActivo);
+    actualizarResumen(diaId);
+  }
+
+  function actualizarResumen(diaId) {
+    const activo = document.getElementById("toggle_"+diaId).checked;
+    const resumenEl = document.getElementById("resumen_"+diaId);
+    if (!activo) {
+      resumenEl.textContent = "Sin turnos configurados";
+      resumenEl.className = "dia-resumen";
+      return;
+    }
+    const pActivo = document.getElementById("pActivo_"+diaId)?.checked;
+    const tActivo = document.getElementById("tActivo_"+diaId)?.checked;
+    const pDesde = document.getElementById("pDesde_"+diaId)?.value || "";
+    const pHasta = document.getElementById("pHasta_"+diaId)?.value || "";
+    const tDesde = document.getElementById("tDesde_"+diaId)?.value || "";
+    const tHasta = document.getElementById("tHasta_"+diaId)?.value || "";
+    const partes = [];
+    if (pActivo) partes.push(`🏥 ${pDesde}–${pHasta}`);
+    if (tActivo) partes.push(`📱 ${tDesde}–${tHasta}`);
+    resumenEl.textContent = partes.length ? partes.join("  ·  ") : "Activado — sin modalidades";
+    resumenEl.className = "dia-resumen activo";
+  }
+
+  // Listeners para actualizar resumen al cambiar horarios
+  function engancharListeners() {
+    DIAS.forEach(dia => {
+      ["pDesde_","pHasta_","tDesde_","tHasta_"].forEach(prefix => {
+        const el = document.getElementById(prefix+dia.id);
+        if (el) el.addEventListener("change", () => actualizarResumen(dia.id));
+      });
+    });
+  }
+
+  // ── GUARDAR ───────────────────────────────────────────────────────────────
+  window.guardarDisponibilidad = async function() {
+    const btn = document.getElementById("btnGuardar");
+    const status = document.getElementById("saveStatus");
+    btn.disabled = true;
+    btn.textContent = "Guardando...";
+
+    const datos = { duracionSlot: document.getElementById("duracionSlot").value };
+
+    DIAS.forEach(dia => {
+      datos[dia.id] = {
+        activo: document.getElementById("toggle_"+dia.id).checked,
+        presencial: {
+          activo: document.getElementById("pActivo_"+dia.id)?.checked || false,
+          desde:  document.getElementById("pDesde_"+dia.id)?.value  || "09:00",
+          hasta:  document.getElementById("pHasta_"+dia.id)?.value  || "13:00",
+        },
+        teleconsulta: {
+          activo: document.getElementById("tActivo_"+dia.id)?.checked || false,
+          desde:  document.getElementById("tDesde_"+dia.id)?.value  || "17:00",
+          hasta:  document.getElementById("tHasta_"+dia.id)?.value  || "20:00",
+        }
+      };
+    });
+
+    try {
+      await setDoc(doc(db, "config", "disponibilidad"), datos);
+      status.style.display = "flex";
+      status.className = "save-status ok";
+      status.textContent = "✅ Disponibilidad guardada";
+      setTimeout(() => status.style.display = "none", 3000);
+    } catch(err) {
+      status.style.display = "flex";
+      status.className = "save-status error";
+      status.textContent = "❌ Error: " + err.message;
+    }
+
+    btn.disabled = false;
+    btn.textContent = "💾 Guardar disponibilidad";
+  }
+
+  // ── CARGAR ────────────────────────────────────────────────────────────────
+  async function cargarDisponibilidad() {
+    const snap = await getDoc(doc(db, "config", "disponibilidad"));
+    const datos = snap.exists() ? snap.data() : {};
+    if (datos.duracionSlot) document.getElementById("duracionSlot").value = datos.duracionSlot;
+    renderDias(datos);
+    engancharListeners();
+  }
+
+  cargarDisponibilidad();
+</script>
+</body>
+</html>

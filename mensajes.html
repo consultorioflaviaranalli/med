@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script src="config.js"></script>
+  <script src="init.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mensajes – Dra. Guerra Verónica</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+
+    .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .logo-circle { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
+    .topbar h1 { font-size: 17px; font-weight: 600; color: #2d3748; }
+    .topbar h1 span { color: #667eea; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .badge-online { font-size: 12px; background: #c6f6d5; color: #276749; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+    .user-chip { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a5568; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+    .btn-logout { background: none; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 13px; color: #718096; cursor: pointer; }
+    .btn-logout:hover { background: #fff5f5; color: #e53e3e; border-color: #fed7d7; }
+
+    .layout { display: flex; min-height: calc(100vh - 64px); }
+
+    .sidebar { width: 230px; background: #fff; border-right: 1px solid #e2e8f0; padding: 1.5rem 0; flex-shrink: 0; }
+    .nav-section { padding: 0 1rem 0.5rem; font-size: 11px; font-weight: 600; letter-spacing: .08em; color: #a0aec0; text-transform: uppercase; margin-top: 1rem; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.5rem; font-size: 14px; color: #4a5568; cursor: pointer; text-decoration: none; transition: all .15s; }
+    .nav-item:hover { background: #f7fafc; color: #2d3748; }
+    .nav-item.active { background: #ebf4ff; color: #3182ce; font-weight: 500; border-right: 3px solid #3182ce; }
+    .nav-icon { font-size: 17px; width: 22px; text-align: center; }
+
+    .main { flex: 1; display: flex; overflow: hidden; height: calc(100vh - 64px); }
+
+    /* LISTA CONVERSACIONES */
+    .conv-lista {
+      width: 320px; background: #fff;
+      border-right: 1px solid #e2e8f0;
+      display: flex; flex-direction: column;
+      flex-shrink: 0;
+    }
+    .conv-header {
+      padding: 1.25rem; border-bottom: 1px solid #e2e8f0;
+      font-size: 15px; font-weight: 600; color: #2d3748;
+    }
+    .conv-search {
+      padding: 10px 1rem; border-bottom: 1px solid #f0f4f8;
+    }
+    .conv-search input {
+      width: 100%; padding: 8px 12px;
+      border: 1px solid #e2e8f0; border-radius: 8px;
+      font-size: 13px; outline: none;
+    }
+    .conv-search input:focus { border-color: #667eea; }
+    .conv-items { overflow-y: auto; flex: 1; }
+
+    .conv-item {
+      padding: 14px 1rem; border-bottom: 1px solid #f7fafc;
+      cursor: pointer; transition: background .15s;
+      display: flex; gap: 10px; align-items: flex-start;
+    }
+    .conv-item:hover { background: #f7fafc; }
+    .conv-item.active { background: #ebf4ff; }
+    .conv-item.unread .conv-nombre { font-weight: 600; }
+
+    .conv-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; flex-shrink: 0; }
+    .conv-body { flex: 1; min-width: 0; }
+    .conv-nombre { font-size: 14px; color: #2d3748; }
+    .conv-preview { font-size: 12px; color: #a0aec0; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .conv-meta { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+    .conv-hora { font-size: 11px; color: #a0aec0; }
+    .conv-dot { width: 8px; height: 8px; border-radius: 50%; background: #3182ce; }
+
+    /* PANEL CHAT */
+    .chat-panel {
+      flex: 1; display: flex; flex-direction: column;
+      background: #f7fafc;
+    }
+    .chat-empty {
+      flex: 1; display: flex; align-items: center;
+      justify-content: center; flex-direction: column;
+      color: #a0aec0; gap: 12px;
+    }
+    .chat-empty-icon { font-size: 48px; }
+
+    .chat-header {
+      background: #fff; padding: 1rem 1.5rem;
+      border-bottom: 1px solid #e2e8f0;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .chat-header-avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; }
+    .chat-header-info { flex: 1; }
+    .chat-header-nombre { font-size: 15px; font-weight: 600; color: #2d3748; }
+    .chat-header-sub { font-size: 12px; color: #718096; margin-top: 2px; }
+    .badge-activo { background: #c6f6d5; color: #276749; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+    .badge-vencido { background: #fed7d7; color: #c53030; font-size: 11px; padding: 2px 8px; border-radius: 10px; }
+
+    .chat-mensajes {
+      flex: 1; overflow-y: auto;
+      padding: 1.5rem; display: flex;
+      flex-direction: column; gap: 12px;
+    }
+    .msg-burbuja { max-width: 70%; padding: 10px 14px; border-radius: 14px; font-size: 14px; line-height: 1.5; }
+    .msg-paciente { background: #e2e8f0; color: #2d3748; align-self: flex-start; border-bottom-left-radius: 4px; }
+    .msg-dra { background: #667eea; color: #fff; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg-quien { font-size: 11px; font-weight: 600; margin-bottom: 3px; opacity: .8; }
+    .msg-hora { font-size: 11px; margin-top: 4px; opacity: .7; }
+
+    .chat-footer {
+      background: #fff; padding: 1rem 1.5rem;
+      border-top: 1px solid #e2e8f0;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .chat-footer input {
+      flex: 1; padding: 10px 14px;
+      border: 1px solid #e2e8f0; border-radius: 10px;
+      font-size: 14px; outline: none;
+      font-family: inherit;
+    }
+    .chat-footer input:focus { border-color: #667eea; }
+    .btn-enviar {
+      background: #667eea; color: #fff;
+      border: none; border-radius: 10px;
+      padding: 10px 18px; font-size: 14px;
+      cursor: pointer; white-space: nowrap;
+    }
+    .btn-enviar:hover { background: #5a67d8; }
+    .btn-enviar:disabled { background: #a0aec0; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-circle">P</div>
+    <h1>Pedi<span>Med</span></h1>
+  </div>
+  <div class="topbar-right">
+    <span class="badge-online">● En línea</span>
+    <div class="user-chip">
+      <div class="user-avatar">VG</div>
+      <span>Dra. Guerra Verónica</span>
+    </div>
+    <button class="btn-logout" onclick="location.href='acceso-dra-guerra.html'">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item" href="panel-medico.html"><span class="nav-icon">🏠</span> Inicio</a>
+    <a class="nav-item" href="turnos.html"><span class="nav-icon">📅</span> Turnos</a>
+    <a class="nav-item" href="calendario.html"><span class="nav-icon">🗓️</span> Calendario</a>
+    <div class="nav-section">Pacientes</div>
+    <a class="nav-item" href="mis-pacientes.html"><span class="nav-icon">👶</span> Mis Pacientes</a>
+    <a class="nav-item" href="historias-clinicas.html"><span class="nav-icon">📋</span> Historias Clínicas</a>
+    <a class="nav-item" href="#"><span class="nav-icon">💊</span> Recetas</a>
+    <div class="nav-section">Comunicación</div>
+    <a class="nav-item active" href="mensajes.html">
+      <span class="nav-icon">💬</span> Mensajes
+      <span id="badgeCount" style="margin-left:auto;background:#3182ce;color:#fff;font-size:11px;padding:1px 6px;border-radius:10px;display:none;"></span>
+    </a>
+    <a class="nav-item" href="#"><span class="nav-icon">📹</span> Teleconsulta</a>
+    <div class="nav-section">Sistema</div>
+    <a class="nav-item" href="#"><span class="nav-icon">⚙️</span> Configuración</a>
+  </nav>
+
+  <div class="main">
+    <!-- LISTA -->
+    <div class="conv-lista">
+      <div class="conv-header">💬 Mensajes de pacientes</div>
+      <div class="conv-search">
+        <input type="text" placeholder="Buscar paciente..." oninput="filtrarConversaciones(this.value)" />
+      </div>
+      <div class="conv-items" id="convItems">
+        <div style="padding:2rem;text-align:center;color:#a0aec0;font-size:13px;">Cargando...</div>
+      </div>
+    </div>
+
+    <!-- CHAT -->
+    <div class="chat-panel" id="chatPanel">
+      <div class="chat-empty">
+        <div class="chat-empty-icon">💬</div>
+        <div style="font-size:15px;color:#718096;">Seleccioná una conversación</div>
+        <div style="font-size:13px;">Los mensajes de los pacientes aparecen acá</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+  import { getFirestore, collection, query, getDocs, addDoc, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyAxr6HVePo0BeLyV7-QuH668OpZqVOrm2s",
+    authDomain: "consultorio-pediatrico-30cc2.firebaseapp.com",
+    projectId: "consultorio-pediatrico-30cc2",
+    storageBucket: "consultorio-pediatrico-30cc2.firebasestorage.app",
+    messagingSenderId: "806158143244",
+    appId: "1:806158143244:web:315f13af8d5dc41c0cc329"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  let conversaciones = [];
+  let turnoSeleccionado = null;
+  let unsubMensajes = null;
+
+  const colores = [
+    { bg: '#ebf4ff', txt: '#3182ce' }, { bg: '#e9d8fd', txt: '#6b46c1' },
+    { bg: '#c6f6d5', txt: '#276749' }, { bg: '#fefcbf', txt: '#b7791f' },
+    { bg: '#fed7d7', txt: '#c53030' }, { bg: '#e6fffa', txt: '#234e52' }
+  ];
+
+  function colorPara(str) {
+    let h = 0; for (let c of str) h += c.charCodeAt(0);
+    return colores[h % colores.length];
+  }
+
+  async function cargarConversaciones() {
+    const snap = await getDocs(collection(db, "turnos"));
+    const lista = [];
+    for (const doc of snap.docs) {
+      const t = doc.data();
+      if (!t.nombre) continue;
+      // Ver si tiene mensajes
+      const mSnap = await getDocs(collection(db, "turnos", doc.id, "mensajes"));
+      if (mSnap.empty) continue;
+      // Último mensaje
+      const msgs = mSnap.docs.map(d => d.data()).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+      const ultimo = msgs[0];
+      const noLeidos = msgs.filter(m => m.autor === "paciente" && !m.leido).length;
+      lista.push({ id: doc.id, ...t, ultimoMsg: ultimo, noLeidos });
+    }
+    lista.sort((a, b) => new Date(b.ultimoMsg.fecha) - new Date(a.ultimoMsg.fecha));
+    conversaciones = lista;
+    renderConversaciones(lista);
+
+    const total = lista.reduce((s, c) => s + c.noLeidos, 0);
+    const badge = document.getElementById("badgeCount");
+    if (total > 0) { badge.textContent = total; badge.style.display = "inline"; }
+  }
+
+  function renderConversaciones(lista) {
+    const cont = document.getElementById("convItems");
+    if (lista.length === 0) {
+      cont.innerHTML = '<div style="padding:2rem;text-align:center;color:#a0aec0;font-size:13px;">No hay mensajes aún.</div>';
+      return;
+    }
+    cont.innerHTML = lista.map(c => {
+      const col = colorPara(c.apellido + c.nombre);
+      const ini = (c.apellido[0] + c.nombre[0]).toUpperCase();
+      const hora = c.ultimoMsg.fecha ? new Date(c.ultimoMsg.fecha).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) : "";
+      const diasDesde = Math.floor((new Date() - new Date(c.fecha + "T00:00:00")) / (1000*60*60*24));
+      const activo = diasDesde >= 0 && diasDesde <= 10;
+      return `
+        <div class="conv-item ${c.noLeidos > 0 ? 'unread' : ''}" onclick="abrirChat('${c.id}')" id="conv-${c.id}">
+          <div class="conv-avatar" style="background:${col.bg};color:${col.txt};">${ini}</div>
+          <div class="conv-body">
+            <div class="conv-nombre">${c.apellido}, ${c.nombre}</div>
+            <div class="conv-preview">${c.ultimoMsg.autor === 'dra' ? 'Vos: ' : ''}${c.ultimoMsg.texto}</div>
+          </div>
+          <div class="conv-meta">
+            <span class="conv-hora">${hora}</span>
+            ${c.noLeidos > 0 ? '<span class="conv-dot"></span>' : ''}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  window.filtrarConversaciones = function(q) {
+    const filtradas = conversaciones.filter(c =>
+      (c.apellido + ' ' + c.nombre).toLowerCase().includes(q.toLowerCase()) ||
+      c.dni.includes(q)
+    );
+    renderConversaciones(filtradas);
+  }
+
+  window.abrirChat = function(turnoId) {
+    const t = conversaciones.find(c => c.id === turnoId);
+    if (!t) return;
+    turnoSeleccionado = t;
+
+    document.querySelectorAll('.conv-item').forEach(el => el.classList.remove('active'));
+    const el = document.getElementById('conv-' + turnoId);
+    if (el) el.classList.add('active');
+
+    const diasDesde = Math.floor((new Date() - new Date(t.fecha + "T00:00:00")) / (1000*60*60*24));
+    const activo = diasDesde >= 0 && diasDesde <= 10;
+    const diasRestantes = 10 - diasDesde;
+    const col = colorPara(t.apellido + t.nombre);
+    const ini = (t.apellido[0] + t.nombre[0]).toUpperCase();
+    const fechaFormateada = new Date(t.fecha + "T00:00:00").toLocaleDateString("es-AR", { day: "numeric", month: "long", year: "numeric" });
+
+    document.getElementById("chatPanel").innerHTML = `
+      <div class="chat-header">
+        <div class="chat-header-avatar" style="background:${col.bg};color:${col.txt};">${ini}</div>
+        <div class="chat-header-info">
+          <div class="chat-header-nombre">${t.apellido}, ${t.nombre}</div>
+          <div class="chat-header-sub">Turno: ${fechaFormateada} · ${t.hora}hs · ${t.motivo || '—'}</div>
+        </div>
+        <span class="${activo ? 'badge-activo' : 'badge-vencido'}">${activo ? `Activo · ${diasRestantes}d restantes` : 'Cerrado'}</span>
+      </div>
+      <div class="chat-mensajes" id="chatMensajes"></div>
+      <div class="chat-footer">
+        <input type="text" id="inputRespuesta" placeholder="${activo ? 'Escribí tu respuesta...' : 'Este chat está cerrado'}" ${!activo ? 'disabled' : ''} onkeydown="if(event.key==='Enter') enviarRespuesta()" />
+        <button class="btn-enviar" onclick="enviarRespuesta()" ${!activo ? 'disabled' : ''}>Enviar</button>
+      </div>
+    `;
+
+    if (unsubMensajes) unsubMensajes();
+    const q = query(collection(db, "turnos", turnoId, "mensajes"), orderBy("fecha", "asc"));
+    unsubMensajes = onSnapshot(q, (snap) => {
+      const cont = document.getElementById("chatMensajes");
+      if (!cont) return;
+      cont.innerHTML = "";
+      snap.forEach(doc => {
+        const m = doc.data();
+        const esDra = m.autor === "dra";
+        const hora = m.fecha ? new Date(m.fecha).toLocaleTimeString("es-AR", { hour: "2-digit", minute: "2-digit" }) : "";
+        const div = document.createElement("div");
+        div.className = "msg-burbuja " + (esDra ? "msg-dra" : "msg-paciente");
+        div.innerHTML = `
+          ${!esDra ? `<div class="msg-quien">${t.apellido}, ${t.nombre}</div>` : ""}
+          ${m.texto}
+          <div class="msg-hora">${hora}</div>
+        `;
+        cont.appendChild(div);
+      });
+      cont.scrollTop = cont.scrollHeight;
+    });
+  }
+
+  window.enviarRespuesta = async function() {
+    if (!turnoSeleccionado) return;
+    const input = document.getElementById("inputRespuesta");
+    const texto = input.value.trim();
+    if (!texto) return;
+    input.value = "";
+    await addDoc(collection(db, "turnos", turnoSeleccionado.id, "mensajes"), {
+      texto, autor: "dra", fecha: new Date().toISOString(), leido: true
+    });
+  }
+
+  cargarConversaciones();
+</script>
+<script src="sidebar-mobile.js"></script>
+</body>
+</html>

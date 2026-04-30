@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <script src="config.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elegir Turno</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        .tarjeta {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 450px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        h1 { color: #2c7bb6; font-size: 20px; text-align: center; margin-bottom: 25px; }
+        label { display: block; color: #555; margin-bottom: 5px; font-size: 14px; }
+        input[type="date"] {
+            width: 100%; padding: 10px; margin-bottom: 20px;
+            border: 1px solid #ccc; border-radius: 8px;
+            font-size: 15px; box-sizing: border-box;
+        }
+        .tipo-selector { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tipo-btn {
+            flex: 1; padding: 13px 8px;
+            border: 2px solid #ccc; border-radius: 10px;
+            background: white; font-size: 14px;
+            cursor: pointer; color: #555;
+            transition: all .2s; font-family: Arial, sans-serif;
+        }
+        .tipo-btn.activo { border-color: #2c7bb6; background: #e8f4fd; color: #2c7bb6; font-weight: bold; }
+        .tipo-btn:disabled { opacity: .4; cursor: not-allowed; background: #f5f5f5; }
+        .horarios { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .horario-btn {
+            padding: 10px 5px; background-color: #e8f4fd;
+            border: 1px solid #2c7bb6; border-radius: 8px;
+            font-size: 13px; cursor: pointer; text-align: center;
+            color: #2c7bb6; font-family: Arial, sans-serif;
+        }
+        .horario-btn:hover { background-color: #2c7bb6; color: white; }
+        .horario-btn.seleccionado { background-color: #2c7bb6; color: white; }
+        .horario-btn.ocupado { background-color: #eee; border-color: #ccc; color: #aaa; cursor: not-allowed; }
+        .btn { width: 100%; padding: 15px; background-color: #2c7bb6; color: white; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; font-family: Arial, sans-serif; }
+        .btn:hover { background-color: #1a5a8a; }
+        .volver { display: block; text-align: center; margin-top: 15px; color: #2c7bb6; text-decoration: none; font-size: 14px; }
+        #turno-seleccionado { text-align: center; color: #2c7bb6; font-size: 14px; margin-bottom: 15px; min-height: 20px; }
+        .aviso { background: #fff5f5; border: 1px solid #fed7d7; border-radius: 8px; padding: 10px 14px; color: #c53030; font-size: 13px; margin-bottom: 14px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="tarjeta">
+        <h1>📅 Elegir día y horario</h1>
+
+        <label>Tipo de consulta</label>
+        <div class="tipo-selector">
+            <button id="btnPresencial"   class="tipo-btn activo" onclick="cambiarTipo('presencial')">🏥 Presencial</button>
+            <button id="btnTeleconsulta" class="tipo-btn"         onclick="cambiarTipo('teleconsulta')">💻 Teleconsulta</button>
+        </div>
+
+        <div class="aviso" id="avisoTipo"></div>
+
+        <label>Seleccioná el día</label>
+        <input type="date" id="fecha">
+        <div class="horarios" id="horarios"></div>
+        <p id="turno-seleccionado"></p>
+        <button class="btn" id="btnContinuar">Continuar →</button>
+        <a href="index.html" class="volver">← Volver al inicio</a>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+        const app = initializeApp(CONFIG.firebase);
+        const db  = getFirestore(app);
+
+        // Configuración por defecto (si no hay nada en Firestore)
+        const cfgDefault = {
+            intervalo: 30,
+            dias: {
+                "1": { activo: true,  presencial: { activo: true, inicio: "07:00", fin: "20:00" }, telemedicina: { activo: true, inicio: "07:00", fin: "20:00" } },
+                "2": { activo: true,  presencial: { activo: true, inicio: "07:00", fin: "20:00" }, telemedicina: { activo: true, inicio: "07:00", fin: "20:00" } },
+                "3": { activo: true,  presencial: { activo: true, inicio: "07:00", fin: "20:00" }, telemedicina: { activo: true, inicio: "07:00", fin: "20:00" } },
+                "4": { activo: true,  presencial: { activo: true, inicio: "07:00", fin: "20:00" }, telemedicina: { activo: true, inicio: "07:00", fin: "20:00" } },
+                "5": { activo: true,  presencial: { activo: true, inicio: "07:00", fin: "20:00" }, telemedicina: { activo: true, inicio: "07:00", fin: "20:00" } },
+                "6": { activo: false, presencial: { activo: true, inicio: "07:00", fin: "13:00" }, telemedicina: { activo: false, inicio: "07:00", fin: "13:00" } },
+                "0": { activo: false, presencial: { activo: false, inicio: "07:00", fin: "13:00" }, telemedicina: { activo: false, inicio: "07:00", fin: "13:00" } },
+            }
+        };
+
+        let configHorarios = cfgDefault;
+        let tipoSeleccionado = "presencial";
+        let horaSeleccionada = null;
+
+        // Cargar config desde Firestore
+        getDoc(doc(db, "configuracion", "horarios")).then(snap => {
+            if (snap.exists()) {
+                const raw = snap.data();
+                if (raw.dias) {
+                    // Nueva estructura por día
+                    configHorarios = { intervalo: raw.intervalo || 30, dias: raw.dias };
+                } else if (raw.diasTrabajados) {
+                    // Compatibilidad con estructura antigua
+                    const dias = {};
+                    for (let i = 0; i <= 6; i++) {
+                        dias[String(i)] = {
+                            activo: raw.diasTrabajados.includes(i),
+                            presencial:   { ...cfgDefault.dias["1"].presencial,   ...(raw.presencial   || {}) },
+                            telemedicina: { ...cfgDefault.dias["1"].telemedicina, ...(raw.telemedicina || {}) }
+                        };
+                    }
+                    configHorarios = { intervalo: raw.presencial?.intervalo || 30, dias };
+                }
+            }
+            const f = document.getElementById("fecha").value;
+            if (f) actualizarBotonesTipo(f);
+        }).catch(() => {});
+
+        function generarSlots(inicio, fin, intervalo) {
+            const slots = [];
+            const [hI, mI] = inicio.split(':').map(Number);
+            const finMins  = fin === "24:00" ? 1440 : fin.split(':').map(Number).reduce((a, b, i) => i === 0 ? b * 60 : a + b, 0);
+            let mins = hI * 60 + mI;
+            while (mins < finMins) {
+                slots.push(String(Math.floor(mins / 60)).padStart(2, '0') + ':' + String(mins % 60).padStart(2, '0'));
+                mins += intervalo;
+            }
+            return slots;
+        }
+
+        function slotsParaTipo(cfgTipo, intervalo) {
+            if (cfgTipo.slots && cfgTipo.slots.length > 0) return cfgTipo.slots;
+            if (cfgTipo.franjas && cfgTipo.franjas.length > 0) {
+                const todos = [];
+                cfgTipo.franjas.forEach(f => todos.push(...generarSlots(f.inicio, f.fin, intervalo)));
+                return [...new Set(todos)].sort();
+            }
+            return generarSlots(cfgTipo.inicio || "07:00", cfgTipo.fin || "20:00", intervalo);
+        }
+
+        function getDiaConfig(fecha) {
+            const dia = new Date(fecha + "T00:00:00").getDay();
+            return configHorarios.dias?.[String(dia)] || null;
+        }
+
+        function actualizarBotonesTipo(fecha) {
+            const diaConfig = getDiaConfig(fecha);
+            const presActivo = diaConfig?.activo && diaConfig?.presencial?.activo !== false;
+            const teleActivo = diaConfig?.activo && diaConfig?.telemedicina?.activo !== false;
+
+            document.getElementById("btnPresencial").disabled   = !presActivo;
+            document.getElementById("btnTeleconsulta").disabled = !teleActivo;
+
+            // Si el tipo actual quedó desactivado, cambiar al otro disponible
+            if (tipoSeleccionado === "presencial" && !presActivo && teleActivo) cambiarTipo("teleconsulta", false);
+            if (tipoSeleccionado === "teleconsulta" && !teleActivo && presActivo) cambiarTipo("presencial", false);
+        }
+
+        window.cambiarTipo = function(tipo, mostrar = true) {
+            tipoSeleccionado = tipo;
+            document.getElementById("btnPresencial").className   = "tipo-btn" + (tipo === "presencial"   ? " activo" : "");
+            document.getElementById("btnTeleconsulta").className = "tipo-btn" + (tipo === "teleconsulta" ? " activo" : "");
+            horaSeleccionada = null;
+            document.getElementById("turno-seleccionado").textContent = "";
+            document.getElementById("avisoTipo").style.display = "none";
+            if (mostrar) {
+                const fecha = document.getElementById("fecha").value;
+                if (fecha) mostrarHorarios();
+            }
+        };
+
+        document.getElementById("fecha").addEventListener("change", () => {
+            const fecha = document.getElementById("fecha").value;
+            if (fecha) actualizarBotonesTipo(fecha);
+            mostrarHorarios();
+        });
+        document.getElementById("btnContinuar").addEventListener("click", continuar);
+
+        async function mostrarHorarios() {
+            const fecha      = document.getElementById("fecha").value;
+            const contenedor = document.getElementById("horarios");
+            contenedor.innerHTML = "";
+            horaSeleccionada = null;
+            document.getElementById("turno-seleccionado").textContent = "";
+            document.getElementById("turno-seleccionado").style.color = "#2c7bb6";
+            document.getElementById("avisoTipo").style.display = "none";
+
+            if (!fecha) return;
+
+            const diaConfig = getDiaConfig(fecha);
+
+            if (!diaConfig || !diaConfig.activo) {
+                contenedor.innerHTML = "<p style='color:red;grid-column:span 4'>No hay turnos ese día.</p>";
+                return;
+            }
+
+            const cfgTipo = tipoSeleccionado === "teleconsulta" ? diaConfig.telemedicina : diaConfig.presencial;
+
+            if (!cfgTipo || cfgTipo.activo === false) {
+                const aviso = document.getElementById("avisoTipo");
+                aviso.textContent = "Este tipo de consulta no está disponible ese día. Seleccioná el otro tipo.";
+                aviso.style.display = "block";
+                return;
+            }
+
+            const horariosTipo = slotsParaTipo(cfgTipo, configHorarios.intervalo || 30);
+
+            // Bloqueos
+            const bloqueosSnap = await getDocs(collection(db, "bloqueos"));
+            let diaBloqueado = false;
+            const horasBloqueadas = [];
+            bloqueosSnap.forEach(d => {
+                const b = d.data();
+                if (b.fecha === fecha) {
+                    if (b.tipo === "dia") diaBloqueado = true;
+                    if (b.tipo === "horarios" && b.horarios) horasBloqueadas.push(...b.horarios);
+                }
+            });
+            if (diaBloqueado) {
+                contenedor.innerHTML = "<p style='color:red;grid-column:span 4'>No hay turnos disponibles ese día.</p>";
+                return;
+            }
+
+            // Turnos ya ocupados
+            const turnosOcupados = [];
+            const querySnapshot = await getDocs(collection(db, "turnos"));
+            querySnapshot.forEach(d => {
+                const t = d.data();
+                const minutos = (new Date() - new Date(t.reservadoEn)) / 1000 / 60;
+                if (t.fecha === fecha && (t.estado === "confirmado" || minutos < 30)) {
+                    turnosOcupados.push(t.hora);
+                }
+            });
+
+            if (horariosTipo.length === 0) {
+                contenedor.innerHTML = "<p style='color:#888;grid-column:span 4'>No hay horarios configurados para este tipo.</p>";
+                return;
+            }
+
+            horariosTipo.forEach(hora => {
+                const btn = document.createElement("button");
+                btn.className = "horario-btn";
+                btn.textContent = hora;
+                if (turnosOcupados.includes(hora) || horasBloqueadas.includes(hora)) {
+                    btn.classList.add("ocupado");
+                    btn.disabled = true;
+                } else {
+                    btn.addEventListener("click", () => seleccionar(btn, hora));
+                }
+                contenedor.appendChild(btn);
+            });
+        }
+
+        function seleccionar(btn, hora) {
+            document.querySelectorAll(".horario-btn").forEach(b => b.classList.remove("seleccionado"));
+            btn.classList.add("seleccionado");
+            horaSeleccionada = hora;
+            const fecha     = document.getElementById("fecha").value;
+            const tipoLabel = tipoSeleccionado === "teleconsulta" ? "💻 Teleconsulta" : "🏥 Presencial";
+            document.getElementById("turno-seleccionado").textContent =
+                "✅ " + tipoLabel + ": " + fecha + " a las " + hora + "hs";
+        }
+
+        async function continuar() {
+            const fecha = document.getElementById("fecha").value;
+            if (!fecha || !horaSeleccionada) {
+                document.getElementById("turno-seleccionado").textContent = "⚠️ Seleccioná un horario para continuar.";
+                document.getElementById("turno-seleccionado").style.color = "#e53e3e";
+                return;
+            }
+            try {
+                await addDoc(collection(db, "turnos"), {
+                    fecha, hora: horaSeleccionada,
+                    tipo: tipoSeleccionado,
+                    estado: "pendiente-pago",
+                    reservadoEn: new Date().toISOString()
+                });
+                window.location.href = "turnos.html?fecha=" + fecha + "&hora=" + horaSeleccionada + "&tipo=" + tipoSeleccionado;
+            } catch (e) {
+                alert("Error al guardar. Intentá de nuevo.");
+                console.error(e);
+            }
+        }
+    </script>
+</body>
+</html>
