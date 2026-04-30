@@ -459,8 +459,59 @@
       </div>
     </div>
 
+
     <!-- ══════════════════════════════════════ -->
-    <!-- 6. SEGURIDAD                          -->
+    <!-- 6. FIRMA DIGITAL                       -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="seccion">
+      <div class="seccion-header">
+        <span class="seccion-icono">✍️</span>
+        <div>
+          <div class="seccion-titulo">Firma digital</div>
+          <div class="seccion-sub">Se usa en recetas, certificados y documentos clínicos</div>
+        </div>
+      </div>
+
+      <div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;">
+        <div style="text-align:center;">
+          <div class="foto-label-title">Firma actual</div>
+          <div id="firmaPreview" style="width:280px;height:120px;border:2px dashed #e2e8f0;border-radius:12px;background:#fafafa;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;" onclick="document.getElementById('inputFirmaImg').click()">
+            <span id="firmaPlaceholder" style="font-size:13px;color:#a0aec0;text-align:center;">📝 Sin firma cargada<br><span style="font-size:11px;">Subí una imagen o dibujá abajo</span></span>
+          </div>
+          <input type="file" id="inputFirmaImg" accept="image/*" onchange="cargarFirmaImg(this)">
+          <div style="display:flex;gap:8px;margin-top:8px;justify-content:center;">
+            <button class="btn-upload" onclick="document.getElementById('inputFirmaImg').click()">📁 Subir imagen</button>
+            <button class="btn-upload" onclick="mostrarCanvas()" id="btnDibujar">✍️ Dibujar firma</button>
+            <button class="btn-upload" style="color:#e53e3e;display:none" id="btnQuitarFirma" onclick="quitarFirma()">Quitar</button>
+          </div>
+        </div>
+
+        <div style="flex:1;min-width:220px;">
+          <!-- Canvas para dibujar -->
+          <div id="canvasFirmaWrap" style="display:none;">
+            <div class="foto-label-title">Dibujá tu firma</div>
+            <canvas id="canvasFirma" width="400" height="150" style="border:2px solid #e2e8f0;border-radius:10px;background:#fff;cursor:crosshair;touch-action:none;max-width:100%;"></canvas>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+              <button class="btn-upload" onclick="limpiarCanvas()">🗑️ Limpiar</button>
+              <button class="btn-guardar" style="padding:7px 16px;font-size:13px;" onclick="guardarDesdeCanvas()">✅ Usar esta firma</button>
+            </div>
+          </div>
+
+          <div style="background:#fef9e7;border:1px solid #f6e05e;border-radius:10px;padding:14px;font-size:13px;color:#744210;line-height:1.7;margin-top:12px;">
+            <strong>💡 Sobre la firma</strong><br>
+            La firma se imprime en recetas y certificados generados desde el sistema.<br><br>
+            Podés subir una imagen de tu firma escaneada o firmar directamente con el mouse o dedo (en tablet/celular).
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-guardar" onclick="guardarSeccion('firma')">💾 Guardar firma</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- 7. SEGURIDAD                          -->
     <!-- ══════════════════════════════════════ -->
     <div class="seccion">
       <div class="seccion-header">
@@ -841,6 +892,11 @@
         if (qrBase64 !== null) datos.qrBase64 = qrBase64;
         await setDoc(doc(db, "configuracion", "pagos"), datos, { merge: true });
 
+      } else if (seccion === "firma") {
+        if (firmaBase64 !== null) {
+          await setDoc(doc(db, "configuracion", "firma"), { firmaBase64 }, { merge: true });
+        }
+
       } else if (seccion === "mensajes") {
         await setDoc(doc(db, "configuracion", "mensajes"), {
           msgConfirmado:   document.getElementById("cfgMsgConfirmado").value.trim(),
@@ -901,8 +957,88 @@
     }
   };
 
+
+  // ── FIRMA ─────────────────────────────────────────────────────
+  let firmaBase64 = null;
+
+  window.cargarFirmaImg = function(input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      firmaBase64 = e.target.result;
+      const prev = document.getElementById("firmaPreview");
+      prev.innerHTML = `<img src="${firmaBase64}" style="max-width:100%;max-height:100%;object-fit:contain;padding:8px;" />`;
+      document.getElementById("btnQuitarFirma").style.display = "block";
+      document.getElementById("canvasFirmaWrap").style.display = "none";
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.quitarFirma = function() {
+    firmaBase64 = "";
+    document.getElementById("firmaPreview").innerHTML = `<span id="firmaPlaceholder" style="font-size:13px;color:#a0aec0;text-align:center;">📝 Sin firma cargada<br><span style="font-size:11px;">Subí una imagen o dibujá abajo</span></span>`;
+    document.getElementById("btnQuitarFirma").style.display = "none";
+  };
+
+  window.mostrarCanvas = function() {
+    const wrap = document.getElementById("canvasFirmaWrap");
+    wrap.style.display = wrap.style.display === "none" ? "block" : "none";
+    if (wrap.style.display === "block") iniciarCanvas();
+  };
+
+  window.limpiarCanvas = function() {
+    const canvas = document.getElementById("canvasFirma");
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  };
+
+  function iniciarCanvas() {
+    const canvas = document.getElementById("canvasFirma");
+    const ctx = canvas.getContext("2d");
+    let dibujando = false;
+    ctx.strokeStyle = "#1a202c";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+
+    const pos = (e) => {
+      const r = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / r.width;
+      const scaleY = canvas.height / r.height;
+      const src = e.touches ? e.touches[0] : e;
+      return { x: (src.clientX - r.left) * scaleX, y: (src.clientY - r.top) * scaleY };
+    };
+
+    canvas.onmousedown  = canvas.ontouchstart = e => { e.preventDefault(); dibujando = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
+    canvas.onmousemove  = canvas.ontouchmove  = e => { e.preventDefault(); if (!dibujando) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
+    canvas.onmouseup    = canvas.ontouchend   = () => { dibujando = false; };
+    canvas.onmouseleave = () => { dibujando = false; };
+  }
+
+  window.guardarDesdeCanvas = function() {
+    const canvas = document.getElementById("canvasFirma");
+    firmaBase64 = canvas.toDataURL("image/png");
+    const prev = document.getElementById("firmaPreview");
+    prev.innerHTML = `<img src="${firmaBase64}" style="max-width:100%;max-height:100%;object-fit:contain;padding:8px;" />`;
+    document.getElementById("btnQuitarFirma").style.display = "block";
+    document.getElementById("canvasFirmaWrap").style.display = "none";
+    toast("Firma guardada. Hacé clic en 'Guardar firma' para confirmar.");
+  };
+
+  // Cargar firma existente
+  async function cargarFirma() {
+    try {
+      const snap = await getDoc(doc(db, "configuracion", "firma"));
+      if (snap.exists() && snap.data().firmaBase64) {
+        firmaBase64 = snap.data().firmaBase64;
+        document.getElementById("firmaPreview").innerHTML = `<img src="${firmaBase64}" style="max-width:100%;max-height:100%;object-fit:contain;padding:8px;" />`;
+        document.getElementById("btnQuitarFirma").style.display = "block";
+      }
+    } catch(e) { console.warn(e); }
+  }
+
   // ── INICIAR ───────────────────────────────────────────────────
   cargarConfig();
+  cargarFirma();
 </script>
 
 </body>
