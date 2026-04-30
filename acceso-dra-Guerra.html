@@ -85,17 +85,51 @@
         <p class="error" id="error">Usuario o contraseña incorrectos</p>
     </div>
 
-    <script>
-        document.getElementById("btnIngresar").addEventListener("click", function() {
-            const usuario = document.getElementById("usuario").value;
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+        const app = initializeApp(CONFIG.firebase);
+        const db  = getFirestore(app);
+
+        // Credenciales por defecto (fallback si Firestore no tiene datos)
+        const USUARIO_DEFAULT  = "dra.guerra";
+        const PASSWORD_DEFAULT = "VeroGuerra";
+
+        async function intentarLogin() {
+            const btn = document.getElementById("btnIngresar");
+            btn.textContent = "Verificando...";
+            btn.disabled = true;
+
+            const usuario    = document.getElementById("usuario").value.trim();
             const contrasena = document.getElementById("contrasena").value;
 
-            if (usuario === "dra.VeroPrueba" && contrasena === "VeroPrueba") {
-                window.location.href = "panel-medico.html";
-            } else {
-                document.getElementById("error").style.display = "block";
+            try {
+                const snap = await getDoc(doc(db, "configuracion", "acceso"));
+                const usuarioOK  = snap.exists() ? snap.data().usuario  : USUARIO_DEFAULT;
+                const passwordOK = snap.exists() ? snap.data().password : PASSWORD_DEFAULT;
+
+                if (usuario === usuarioOK && contrasena === passwordOK) {
+                    window.location.href = "panel-medico.html";
+                } else {
+                    document.getElementById("error").style.display = "block";
+                    btn.textContent = "Ingresar";
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                // Si falla Firebase, usar credenciales del archivo
+                if (usuario === USUARIO_DEFAULT && contrasena === PASSWORD_DEFAULT) {
+                    window.location.href = "panel-medico.html";
+                } else {
+                    document.getElementById("error").style.display = "block";
+                    btn.textContent = "Ingresar";
+                    btn.disabled = false;
+                }
             }
-        });
+        }
+
+        document.getElementById("btnIngresar").addEventListener("click", intentarLogin);
+        document.addEventListener("keydown", e => { if (e.key === "Enter") intentarLogin(); });
     </script>
 </body>
 </html>
