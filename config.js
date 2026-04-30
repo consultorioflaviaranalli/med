@@ -1,24 +1,909 @@
-const CONFIG = {
-  firebase: {
-    apiKey: "AIzaSyAwXdUp9yxI8zFDWqStJYBilS2sZto4L9E",
-    authDomain: "consultorio-ranalli.firebaseapp.com",
-    projectId: "consultorio-ranalli",
-    storageBucket: "consultorio-ranalli.firebasestorage.app",
-    messagingSenderId: "645147245710",
-    appId: "1:645147245710:web:d51424609ac04be706dddf"
-  },
-  nombre: "Ranalli",
-  titulo: "Dra.",
-  especialidad: "Pediatría",
-  telefono: "",
-  email: "",
-  matricula: "",
-  direccion: "",
-  nombreApp: "PediMed",
-  logoIcono: "R",
-  colorPrimario: "#667eea",
-  cbu: "",
-  alias: "",
-  mensajeTeleconsulta: "Hola! En unos minutos iniciamos la teleconsulta.",
-  tipoPaciente: "pediátrico"
-};
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <script src="config.js"></script>
+  <script src="init.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Configuración – VERO</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
+
+    /* ── TOPBAR ── */
+    .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+    .topbar-left { display: flex; align-items: center; gap: 12px; }
+    .logo-circle { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
+    .topbar h1 { font-size: 17px; font-weight: 600; color: #2d3748; }
+    .topbar h1 span { color: #667eea; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .badge-online { font-size: 12px; background: #c6f6d5; color: #276749; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
+    .user-chip { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a5568; }
+    .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+    .btn-logout { background: none; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 13px; color: #718096; cursor: pointer; }
+    .btn-logout:hover { background: #fff5f5; color: #e53e3e; border-color: #fed7d7; }
+
+    /* ── LAYOUT ── */
+    .layout { display: flex; min-height: calc(100vh - 64px); }
+    .sidebar { width: 230px; background: #fff; border-right: 1px solid #e2e8f0; padding: 1.5rem 0; flex-shrink: 0; }
+    .nav-section { padding: 0 1rem 0.5rem; font-size: 11px; font-weight: 600; letter-spacing: .08em; color: #a0aec0; text-transform: uppercase; margin-top: 1rem; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.5rem; font-size: 14px; color: #4a5568; cursor: pointer; text-decoration: none; transition: all .15s; }
+    .nav-item:hover { background: #f7fafc; color: #2d3748; }
+    .nav-item.active { background: #ebf4ff; color: #3182ce; font-weight: 500; border-right: 3px solid #3182ce; }
+    .nav-icon { font-size: 17px; width: 22px; text-align: center; }
+    .main { flex: 1; padding: 2rem; overflow-y: auto; max-width: 900px; }
+
+    /* ── HEADER ── */
+    .page-header { margin-bottom: 1.5rem; }
+    .page-header h2 { font-size: 22px; font-weight: 600; color: #2d3748; }
+    .page-header p { font-size: 14px; color: #718096; margin-top: 4px; }
+
+    /* ── SECCIONES ── */
+    .seccion { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .seccion-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid #f0f4f8; }
+    .seccion-icono { font-size: 22px; }
+    .seccion-titulo { font-size: 16px; font-weight: 600; color: #2d3748; }
+    .seccion-sub { font-size: 13px; color: #a0aec0; margin-top: 2px; }
+
+    /* ── FORM ── */
+    .campo-grupo { margin-bottom: 1rem; }
+    .campo-label { display: block; font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; font-weight: 500; }
+    .campo-input { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; color: #2d3748; outline: none; background: #fff; transition: border-color .15s; }
+    .campo-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,.1); }
+    textarea.campo-input { resize: vertical; min-height: 80px; line-height: 1.5; }
+    .campo-hint { font-size: 11px; color: #a0aec0; margin-top: 4px; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
+
+    /* ── FOTO/LOGO ── */
+    .foto-area { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; }
+    .foto-slot { text-align: center; }
+    .foto-label-title { font-size: 12px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
+    .foto-preview { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 32px; margin: 0 auto 10px; overflow: hidden; border: 3px solid #e2e8f0; cursor: pointer; position: relative; }
+    .foto-preview img { width: 100%; height: 100%; object-fit: cover; }
+    .foto-preview:hover::after { content: "📷"; position: absolute; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 50%; }
+    .logo-preview { width: 100px; height: 100px; border-radius: 16px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 32px; margin: 0 auto 10px; overflow: hidden; border: 3px solid #e2e8f0; cursor: pointer; position: relative; }
+    .logo-preview img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
+    .logo-preview:hover::after { content: "📷"; position: absolute; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 16px; }
+    .btn-upload { font-size: 12px; background: #f7fafc; border: 1px solid #e2e8f0; color: #4a5568; padding: 6px 14px; border-radius: 8px; cursor: pointer; }
+    .btn-upload:hover { background: #ebf4ff; border-color: #667eea; color: #667eea; }
+    input[type="file"] { display: none; }
+
+    /* ── HORARIOS ── */
+    .dia-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f4f8; flex-wrap: wrap; }
+    .dia-row:last-child { border-bottom: none; }
+    .dia-toggle { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+    .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #e2e8f0; border-radius: 22px; transition: .2s; }
+    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
+    input:checked + .slider { background: #667eea; }
+    input:checked + .slider:before { transform: translateX(18px); }
+    .dia-nombre { font-size: 14px; font-weight: 500; color: #2d3748; width: 90px; }
+    .horario-inputs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .horario-inputs select { padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; color: #2d3748; outline: none; background: #fff; }
+    .horario-inputs select:focus { border-color: #667eea; }
+    .horario-sep { font-size: 13px; color: #a0aec0; }
+    .dia-desactivado .horario-inputs { opacity: 0.3; pointer-events: none; }
+    .duracion-row { display: flex; align-items: center; gap: 10px; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f4f8; }
+    .duracion-row label { font-size: 13px; color: #4a5568; font-weight: 500; white-space: nowrap; }
+
+    /* ── PAGOS ── */
+    .qr-area { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
+    .qr-preview { width: 120px; height: 120px; border: 2px dashed #e2e8f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px; cursor: pointer; transition: border-color .15s; background: #f7fafc; }
+    .qr-preview:hover { border-color: #667eea; background: #ebf4ff; }
+    .qr-preview img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
+    .qr-preview span { font-size: 11px; color: #a0aec0; text-align: center; }
+    .qr-fields { flex: 1; min-width: 200px; }
+
+    /* ── MENSAJES ── */
+    .msg-chip { display: inline-block; background: #ebf4ff; color: #3182ce; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-family: monospace; cursor: pointer; margin: 2px; }
+    .msg-chip:hover { background: #bee3f8; }
+    .variables-hint { font-size: 12px; color: #718096; margin-bottom: 8px; }
+
+    /* ── SEGURIDAD ── */
+    .pass-strength { height: 4px; border-radius: 2px; margin-top: 6px; transition: all .3s; background: #e2e8f0; }
+    .pass-strength.debil { background: #fc8181; width: 33%; }
+    .pass-strength.media { background: #f6ad55; width: 66%; }
+    .pass-strength.fuerte { background: #68d391; width: 100%; }
+
+    /* ── BOTONES ── */
+    .btn-guardar { background: #667eea; color: #fff; border: none; padding: 11px 28px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background .15s; }
+    .btn-guardar:hover { background: #5a67d8; }
+    .btn-guardar:active { transform: scale(.98); }
+    .btn-guardar.guardando { background: #a0aec0; pointer-events: none; }
+    .btn-secundario { background: #f7fafc; color: #4a5568; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 10px; font-size: 14px; cursor: pointer; }
+    .btn-secundario:hover { background: #ebf4ff; border-color: #667eea; color: #667eea; }
+    .btn-row { display: flex; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap; }
+
+    /* ── TOAST ── */
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #2d3748; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; display: flex; align-items: center; gap: 8px; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.ok { background: #276749; }
+    .toast.error { background: #c53030; }
+
+    /* ── DANGER ── */
+    .seccion-danger { border-color: #fed7d7; background: #fff5f5; }
+    .seccion-danger .seccion-header { border-bottom-color: #fed7d7; }
+    .btn-peligro { background: #fff; color: #e53e3e; border: 1px solid #fed7d7; padding: 10px 20px; border-radius: 10px; font-size: 14px; cursor: pointer; }
+    .btn-peligro:hover { background: #fff5f5; border-color: #e53e3e; }
+
+    .separador { margin: 1.5rem 0; border: none; border-top: 1px solid #f0f4f8; }
+
+    /* ── MOBILE ── */
+    @media (max-width: 700px) {
+      .sidebar { display: none; }
+      .main { padding: 1rem; }
+      .topbar { padding: 0 1rem; }
+      .foto-area { gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo-circle">P</div>
+    <h1>Pedi<span>Med</span></h1>
+  </div>
+  <div class="topbar-right">
+    <span class="badge-online">● En línea</span>
+    <div class="user-chip">
+      <div class="user-avatar">VG</div>
+      <span>Dra. Guerra Verónica</span>
+    </div>
+    <button class="btn-logout" onclick="location.href='acceso-dra-Guerra.html'">Cerrar sesión</button>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="sidebar">
+    <div class="nav-section">Principal</div>
+    <a class="nav-item" href="panel-medico.html"><span class="nav-icon">🏠</span> Inicio</a>
+    <a class="nav-item" href="turnos-dra.html"><span class="nav-icon">📅</span> Turnos</a>
+    <a class="nav-item" href="disponibilidad.html"><span class="nav-icon">🗓️</span> Calendario</a>
+    <div class="nav-section">Pacientes</div>
+    <a class="nav-item" href="mis-pacientes.html"><span class="nav-icon">👶</span> Mis Pacientes</a>
+    <a class="nav-item" href="historias-clinicas.html"><span class="nav-icon">📋</span> Historias Clínicas</a>
+    <div class="nav-section">Comunicación</div>
+    <a class="nav-item" href="mensajes.html"><span class="nav-icon">💬</span> Mensajes</a>
+    <div class="nav-section">Sistema</div>
+    <a class="nav-item active" href="configuracion.html"><span class="nav-icon">⚙️</span> Configuración</a>
+  </nav>
+
+  <main class="main">
+    <div class="page-header">
+      <h2>⚙️ Configuración</h2>
+      <p>Personalizá tu consultorio: datos, horarios, pagos y mensajes automáticos</p>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- 1. PERFIL / FOTO                       -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="seccion">
+      <div class="seccion-header">
+        <span class="seccion-icono">📸</span>
+        <div>
+          <div class="seccion-titulo">Foto y logo</div>
+          <div class="seccion-sub">Imagen de perfil y logo del consultorio</div>
+        </div>
+      </div>
+
+      <div class="foto-area">
+        <div class="foto-slot">
+          <div class="foto-label-title">Foto de perfil</div>
+          <div class="foto-preview" id="fotoPreview" onclick="document.getElementById('inputFoto').click()">
+            <span id="fotoIniciales">VG</span>
+          </div>
+          <input type="file" id="inputFoto" accept="image/*" onchange="cargarFoto(this)">
+          <button class="btn-upload" onclick="document.getElementById('inputFoto').click()">📷 Cambiar foto</button>
+          <button class="btn-upload" style="margin-top:6px;color:#e53e3e;" onclick="quitarFoto()" id="btnQuitarFoto" style="display:none">Quitar foto</button>
+        </div>
+
+        <div class="foto-slot">
+          <div class="foto-label-title">Logo del consultorio</div>
+          <div class="logo-preview" id="logoPreview" onclick="document.getElementById('inputLogo').click()">
+            <span id="logoLetra">P</span>
+          </div>
+          <input type="file" id="inputLogo" accept="image/*" onchange="cargarLogo(this)">
+          <button class="btn-upload" onclick="document.getElementById('inputLogo').click()">🖼️ Subir logo</button>
+          <button class="btn-upload" style="margin-top:6px;color:#e53e3e;" onclick="quitarLogo()" id="btnQuitarLogo" style="display:none">Quitar logo</button>
+        </div>
+
+        <div style="flex:1;min-width:200px;">
+          <div class="campo-grupo">
+            <label class="campo-label">Letra del logo (si no hay imagen)</label>
+            <input type="text" class="campo-input" id="cfgLogoIcono" maxlength="2" placeholder="P" style="max-width:80px;" />
+            <div class="campo-hint">Se muestra en el círculo cuando no hay logo cargado</div>
+          </div>
+          <div class="campo-grupo">
+            <label class="campo-label">Color primario</label>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="color" id="cfgColorPrimario" style="width:40px;height:36px;border:1px solid #e2e8f0;border-radius:8px;padding:2px;cursor:pointer;" />
+              <input type="text" class="campo-input" id="cfgColorPrimarioHex" placeholder="#667eea" style="max-width:120px;" />
+            </div>
+          </div>
+          <div class="campo-grupo">
+            <label class="campo-label">Color secundario</label>
+            <div style="display:flex;align-items:center;gap:10px;">
+              <input type="color" id="cfgColorSecundario" style="width:40px;height:36px;border:1px solid #e2e8f0;border-radius:8px;padding:2px;cursor:pointer;" />
+              <input type="text" class="campo-input" id="cfgColorSecundarioHex" placeholder="#764ba2" style="max-width:120px;" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-guardar" onclick="guardarSeccion('perfil')">💾 Guardar foto y colores</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- 2. DATOS DEL PROFESIONAL              -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="seccion">
+      <div class="seccion-header">
+        <span class="seccion-icono">👤</span>
+        <div>
+          <div class="seccion-titulo">Datos del profesional</div>
+          <div class="seccion-sub">Se muestran en turnos, fichas y documentos</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="campo-grupo">
+          <label class="campo-label">Apellido y nombre</label>
+          <input type="text" class="campo-input" id="cfgNombre" placeholder="Ej: García María" />
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Nombre corto (para saludos)</label>
+          <input type="text" class="campo-input" id="cfgNombreCorto" placeholder="Ej: Dra. García" />
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Título</label>
+          <input type="text" class="campo-input" id="cfgTitulo" placeholder="Dra." />
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Especialidad</label>
+          <input type="text" class="campo-input" id="cfgEspecialidad" placeholder="Pediatría" />
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Matrícula</label>
+          <input type="text" class="campo-input" id="cfgMatricula" placeholder="MP 12345" />
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Iniciales (para avatar)</label>
+          <input type="text" class="campo-input" id="cfgIniciales" maxlength="3" placeholder="VG" />
+        </div>
+      </div>
+
+      <hr class="separador" />
+
+      <div class="grid-2">
+        <div class="campo-grupo">
+          <label class="campo-label">Nombre de la app / consultorio</label>
+          <input type="text" class="campo-input" id="cfgNombreApp" placeholder="PediMed" />
+          <div class="campo-hint">Aparece en el logo y en la barra superior</div>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Dirección del consultorio</label>
+          <input type="text" class="campo-input" id="cfgDireccion" placeholder="Av. Corrientes 1234, CABA" />
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Teléfono</label>
+          <input type="text" class="campo-input" id="cfgTelefono" placeholder="1155556677" />
+          <div class="campo-hint">Sin espacios ni guiones, con código de área</div>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">WhatsApp</label>
+          <input type="text" class="campo-input" id="cfgWhatsapp" placeholder="5491155556677" />
+          <div class="campo-hint">Con código de país (549 + código + número)</div>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Email</label>
+          <input type="email" class="campo-input" id="cfgEmail" placeholder="dra@consultorio.com" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-guardar" onclick="guardarSeccion('datos')">💾 Guardar datos</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- 3. HORARIOS DE ATENCIÓN               -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="seccion">
+      <div class="seccion-header">
+        <span class="seccion-icono">🕐</span>
+        <div>
+          <div class="seccion-titulo">Horarios de atención</div>
+          <div class="seccion-sub">Definí en qué días y horarios se pueden sacar turnos</div>
+        </div>
+      </div>
+
+      <div id="diasContainer"></div>
+
+      <div class="duracion-row">
+        <label>⏱️ Duración de cada turno:</label>
+        <select id="cfgDuracionTurno" class="campo-input" style="max-width:130px;padding:7px 10px;">
+          <option value="15">15 minutos</option>
+          <option value="20">20 minutos</option>
+          <option value="30" selected>30 minutos</option>
+          <option value="40">40 minutos</option>
+          <option value="45">45 minutos</option>
+          <option value="60">1 hora</option>
+        </select>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-guardar" onclick="guardarSeccion('horarios')">💾 Guardar horarios</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- 4. PAGOS                              -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="seccion">
+      <div class="seccion-header">
+        <span class="seccion-icono">💳</span>
+        <div>
+          <div class="seccion-titulo">Cobros y pagos</div>
+          <div class="seccion-sub">CBU, alias y QR para recibir pagos de los pacientes</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="campo-grupo">
+          <label class="campo-label">CBU</label>
+          <input type="text" class="campo-input" id="cfgCbu" placeholder="0000000000000000000000" maxlength="22" />
+          <div class="campo-hint">22 dígitos sin espacios</div>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Alias</label>
+          <input type="text" class="campo-input" id="cfgAlias" placeholder="NOMBRE.APELLIDO.MP" />
+          <div class="campo-hint">Alias de tu cuenta de MercadoPago o banco</div>
+        </div>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label">Precio de la consulta ($)</label>
+        <input type="number" class="campo-input" id="cfgPrecioConsulta" placeholder="0" style="max-width:180px;" />
+        <div class="campo-hint">Se muestra al paciente al sacar turno. Dejalo en 0 para no mostrarlo.</div>
+      </div>
+
+      <hr class="separador" />
+
+      <div class="qr-area">
+        <div>
+          <div class="foto-label-title">QR de pago</div>
+          <div class="qr-preview" id="qrPreview" onclick="document.getElementById('inputQR').click()">
+            <span style="font-size:28px;">📱</span>
+            <span>Subir QR</span>
+          </div>
+          <input type="file" id="inputQR" accept="image/*" onchange="cargarQR(this)">
+          <button class="btn-upload" style="margin-top:8px;" onclick="document.getElementById('inputQR').click()">Subir imagen QR</button>
+          <button class="btn-upload" style="margin-top:6px;color:#e53e3e;display:none" id="btnQuitarQR" onclick="quitarQR()">Quitar QR</button>
+        </div>
+        <div style="flex:1;min-width:220px;">
+          <div style="background:#f0faf4;border:1px solid #c6f6d5;border-radius:10px;padding:14px;font-size:13px;color:#276749;line-height:1.7;">
+            <strong>💡 ¿Cómo funciona el QR?</strong><br>
+            Subí la imagen del QR de MercadoPago (o cualquier billetera). Cuando el paciente saca turno, puede escanearlo para pagar antes de la consulta.<br><br>
+            Para obtenerlo: abrí <strong>Mercado Pago → Cobrar → Mi código QR</strong> y guardá la imagen.
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-guardar" onclick="guardarSeccion('pagos')">💾 Guardar datos de cobro</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- 5. MENSAJES AUTOMÁTICOS               -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="seccion">
+      <div class="seccion-header">
+        <span class="seccion-icono">💬</span>
+        <div>
+          <div class="seccion-titulo">Mensajes automáticos</div>
+          <div class="seccion-sub">WhatsApp que se envían al paciente en cada etapa</div>
+        </div>
+      </div>
+
+      <div class="variables-hint">
+        Podés usar estas variables en los mensajes — hacé clic para insertar:
+        <br>
+        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{nombre}')"><b>{nombre}</b> nombre del paciente</span>
+        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{fecha}')"><b>{fecha}</b> fecha del turno</span>
+        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{hora}')"><b>{hora}</b> hora del turno</span>
+        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{dra}')"><b>{dra}</b> nombre de la doctora</span>
+        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{direccion}')"><b>{direccion}</b> dirección</span>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label">✅ Turno confirmado</label>
+        <textarea class="campo-input" id="cfgMsgConfirmado" rows="4" placeholder="Hola {nombre}! Tu turno con la {dra} está confirmado para el {fecha} a las {hora}. Consultorio: {direccion}. ¡Nos vemos!"></textarea>
+        <div class="campo-hint">Se envía cuando el paciente saca y confirma el turno</div>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label">⏰ Recordatorio (día anterior)</label>
+        <textarea class="campo-input" id="cfgMsgRecordatorio" rows="4" placeholder="Hola {nombre}! Te recordamos que mañana tenés turno con la {dra} a las {hora}. Consultorio: {direccion}. Si no podés asistir, avisanos con anticipación."></textarea>
+        <div class="campo-hint">Se puede enviar manualmente desde el panel de turnos</div>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label">📹 Teleconsulta (inicio)</label>
+        <textarea class="campo-input" id="cfgMsgTeleconsulta" rows="3" placeholder="Hola! Le escribo de parte de la {dra}. En unos minutos iniciamos la teleconsulta por videollamada de WhatsApp."></textarea>
+        <div class="campo-hint">Se envía al iniciar una teleconsulta por WhatsApp</div>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label">❌ Turno cancelado</label>
+        <textarea class="campo-input" id="cfgMsgCancelado" rows="3" placeholder="Hola {nombre}, te informamos que tu turno del {fecha} a las {hora} fue cancelado. Podés sacar un nuevo turno desde la app."></textarea>
+      </div>
+
+      <div class="campo-grupo">
+        <label class="campo-label">💬 Chat de seguimiento — días habilitados</label>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="number" class="campo-input" id="cfgDiasChat" min="0" max="30" style="max-width:80px;" placeholder="10" />
+          <span style="font-size:13px;color:#718096;">días después de la consulta</span>
+        </div>
+        <div class="campo-hint">Tiempo durante el cual el paciente puede enviar mensajes post-consulta. 0 = deshabilitado.</div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-guardar" onclick="guardarSeccion('mensajes')">💾 Guardar mensajes</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════ -->
+    <!-- 6. SEGURIDAD                          -->
+    <!-- ══════════════════════════════════════ -->
+    <div class="seccion">
+      <div class="seccion-header">
+        <span class="seccion-icono">🔐</span>
+        <div>
+          <div class="seccion-titulo">Seguridad</div>
+          <div class="seccion-sub">Cambiar usuario y contraseña del panel médico</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="campo-grupo">
+          <label class="campo-label">Usuario de acceso</label>
+          <input type="text" class="campo-input" id="cfgUsuario" placeholder="dra.guerra" autocomplete="off" />
+        </div>
+        <div></div>
+        <div class="campo-grupo">
+          <label class="campo-label">Contraseña actual</label>
+          <input type="password" class="campo-input" id="cfgPassActual" placeholder="••••••••" autocomplete="off" />
+        </div>
+        <div></div>
+        <div class="campo-grupo">
+          <label class="campo-label">Nueva contraseña</label>
+          <input type="password" class="campo-input" id="cfgPassNueva" placeholder="Mínimo 6 caracteres" oninput="evaluarPass(this.value)" autocomplete="new-password" />
+          <div class="pass-strength" id="passStrength"></div>
+        </div>
+        <div class="campo-grupo">
+          <label class="campo-label">Repetir nueva contraseña</label>
+          <input type="password" class="campo-input" id="cfgPassRepetir" placeholder="••••••••" autocomplete="new-password" />
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn-guardar" onclick="cambiarPassword()">🔐 Cambiar contraseña</button>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════ -->
+<!-- FIREBASE + LÓGICA                         -->
+<!-- ══════════════════════════════════════════ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const app = initializeApp(CONFIG.firebase);
+  const db  = getFirestore(app);
+
+  // ── Utilidades ────────────────────────────────────────────────
+  function toast(msg, tipo = "ok") {
+    const t = document.getElementById("toast");
+    t.textContent = (tipo === "ok" ? "✅ " : "❌ ") + msg;
+    t.className = "toast show " + tipo;
+    setTimeout(() => t.className = "toast", 3000);
+  }
+
+  // ── HORARIOS: render ─────────────────────────────────────────
+  const DIAS = [
+    { key: "lunes",     label: "Lunes" },
+    { key: "martes",    label: "Martes" },
+    { key: "miercoles", label: "Miércoles" },
+    { key: "jueves",    label: "Jueves" },
+    { key: "viernes",   label: "Viernes" },
+    { key: "sabado",    label: "Sábado" },
+    { key: "domingo",   label: "Domingo" },
+  ];
+
+  function horasOpciones(selVal) {
+    let opts = "";
+    for (let h = 7; h <= 21; h++) {
+      for (let m of ["00", "30"]) {
+        const val = `${String(h).padStart(2,"0")}:${m}`;
+        opts += `<option value="${val}" ${val === selVal ? "selected" : ""}>${val}</option>`;
+      }
+    }
+    return opts;
+  }
+
+  function renderDias(horariosData) {
+    const cont = document.getElementById("diasContainer");
+    cont.innerHTML = "";
+    DIAS.forEach(d => {
+      const info   = (horariosData && horariosData[d.key]) || {};
+      const activo = info.activo !== undefined ? info.activo : (d.key !== "sabado" && d.key !== "domingo");
+      const desde  = info.desde  || "09:00";
+      const hasta  = info.hasta  || "18:00";
+
+      const row = document.createElement("div");
+      row.className = "dia-row" + (activo ? "" : " dia-desactivado");
+      row.id = "diaRow_" + d.key;
+      row.innerHTML = `
+        <div class="dia-toggle">
+          <label class="switch">
+            <input type="checkbox" id="chk_${d.key}" ${activo ? "checked" : ""} onchange="toggleDia('${d.key}')">
+            <span class="slider"></span>
+          </label>
+          <span class="dia-nombre">${d.label}</span>
+        </div>
+        <div class="horario-inputs">
+          <span class="horario-sep">Desde</span>
+          <select id="desde_${d.key}">${horasOpciones(desde)}</select>
+          <span class="horario-sep">hasta</span>
+          <select id="hasta_${d.key}">${horasOpciones(hasta)}</select>
+        </div>
+      `;
+      cont.appendChild(row);
+    });
+  }
+
+  window.toggleDia = function(key) {
+    const chk = document.getElementById("chk_" + key);
+    const row = document.getElementById("diaRow_" + key);
+    row.classList.toggle("dia-desactivado", !chk.checked);
+  };
+
+  // ── FOTOS ─────────────────────────────────────────────────────
+  let fotoBase64  = null;
+  let logoBase64  = null;
+  let qrBase64    = null;
+
+  window.cargarFoto = function(input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      fotoBase64 = e.target.result;
+      const prev = document.getElementById("fotoPreview");
+      prev.innerHTML = `<img src="${fotoBase64}" alt="foto" />`;
+      document.getElementById("btnQuitarFoto").style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.quitarFoto = function() {
+    fotoBase64 = "";
+    const prev = document.getElementById("fotoPreview");
+    prev.innerHTML = `<span id="fotoIniciales">${document.getElementById("cfgIniciales").value || CONFIG.iniciales}</span>`;
+    document.getElementById("btnQuitarFoto").style.display = "none";
+  };
+
+  window.cargarLogo = function(input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      logoBase64 = e.target.result;
+      const prev = document.getElementById("logoPreview");
+      prev.innerHTML = `<img src="${logoBase64}" alt="logo" />`;
+      document.getElementById("btnQuitarLogo").style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.quitarLogo = function() {
+    logoBase64 = "";
+    const prev = document.getElementById("logoPreview");
+    prev.innerHTML = `<span id="logoLetra">${document.getElementById("cfgLogoIcono").value || CONFIG.logoIcono}</span>`;
+    document.getElementById("btnQuitarLogo").style.display = "none";
+  };
+
+  window.cargarQR = function(input) {
+    const file = input.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      qrBase64 = e.target.result;
+      const prev = document.getElementById("qrPreview");
+      prev.innerHTML = `<img src="${qrBase64}" alt="QR" />`;
+      document.getElementById("btnQuitarQR").style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  };
+
+  window.quitarQR = function() {
+    qrBase64 = "";
+    document.getElementById("qrPreview").innerHTML = `<span style="font-size:28px;">📱</span><span>Subir QR</span>`;
+    document.getElementById("btnQuitarQR").style.display = "none";
+  };
+
+  // ── COLORES: sincronizar picker ↔ hex ─────────────────────────
+  document.getElementById("cfgColorPrimario").addEventListener("input", function() {
+    document.getElementById("cfgColorPrimarioHex").value = this.value;
+  });
+  document.getElementById("cfgColorPrimarioHex").addEventListener("input", function() {
+    if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById("cfgColorPrimario").value = this.value;
+  });
+  document.getElementById("cfgColorSecundario").addEventListener("input", function() {
+    document.getElementById("cfgColorSecundarioHex").value = this.value;
+  });
+  document.getElementById("cfgColorSecundarioHex").addEventListener("input", function() {
+    if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById("cfgColorSecundario").value = this.value;
+  });
+
+  // ── VARIABLES en mensajes ─────────────────────────────────────
+  window.insertarVariable = function(campoId, variable) {
+    const el = document.getElementById(campoId);
+    const start = el.selectionStart;
+    const end   = el.selectionEnd;
+    el.value = el.value.substring(0, start) + variable + el.value.substring(end);
+    el.selectionStart = el.selectionEnd = start + variable.length;
+    el.focus();
+  };
+  // Hacer que los chips funcionen para todos los campos
+  document.querySelectorAll(".msg-chip").forEach(chip => {
+    chip.addEventListener("click", function() {
+      const focused = document.activeElement;
+      if (focused && focused.tagName === "TEXTAREA") {
+        insertarVariable(focused.id, chip.textContent.split(" ")[0]);
+      }
+    });
+  });
+
+  // ── FORTALEZA DE CONTRASEÑA ───────────────────────────────────
+  window.evaluarPass = function(val) {
+    const bar = document.getElementById("passStrength");
+    if (!val) { bar.className = "pass-strength"; return; }
+    if (val.length < 6) bar.className = "pass-strength debil";
+    else if (val.length < 10 || !/[0-9]/.test(val)) bar.className = "pass-strength media";
+    else bar.className = "pass-strength fuerte";
+  };
+
+  // ── CARGAR DATOS DESDE FIRESTORE ─────────────────────────────
+  async function cargarConfig() {
+    try {
+      const [snapPerfil, snapHorarios, snapPagos, snapMensajes] = await Promise.all([
+        getDoc(doc(db, "configuracion", "perfil")),
+        getDoc(doc(db, "configuracion", "horarios")),
+        getDoc(doc(db, "configuracion", "pagos")),
+        getDoc(doc(db, "configuracion", "mensajes")),
+      ]);
+      const d = {
+        ...(snapPerfil.exists()   ? snapPerfil.data()   : {}),
+        ...(snapHorarios.exists() ? snapHorarios.data() : {}),
+        ...(snapPagos.exists()    ? snapPagos.data()    : {}),
+        ...(snapMensajes.exists() ? snapMensajes.data() : {}),
+      };
+
+      // Mezclar con CONFIG base
+      const datos = Object.assign({
+        nombre: CONFIG.nombre, nombreCorto: CONFIG.nombreCorto,
+        titulo: CONFIG.titulo, especialidad: CONFIG.especialidad,
+        matricula: CONFIG.matricula, iniciales: CONFIG.iniciales,
+        telefono: CONFIG.telefono, whatsapp: CONFIG.whatsapp,
+        email: CONFIG.email, direccion: CONFIG.direccion,
+        nombreApp: CONFIG.nombreApp, logoIcono: CONFIG.logoIcono,
+        cbu: CONFIG.cbu, alias: CONFIG.alias,
+        colorPrimario: CONFIG.colorPrimario, colorSecundario: CONFIG.colorSecundario,
+        diasChat: CONFIG.diasChat || 10
+      }, d);
+
+      // Rellenar campos
+      document.getElementById("cfgNombre").value        = datos.nombre || "";
+      document.getElementById("cfgNombreCorto").value   = datos.nombreCorto || "";
+      document.getElementById("cfgTitulo").value        = datos.titulo || "";
+      document.getElementById("cfgEspecialidad").value  = datos.especialidad || "";
+      document.getElementById("cfgMatricula").value     = datos.matricula || "";
+      document.getElementById("cfgIniciales").value     = datos.iniciales || "";
+      document.getElementById("cfgNombreApp").value     = datos.nombreApp || "";
+      document.getElementById("cfgDireccion").value     = datos.direccion || "";
+      document.getElementById("cfgTelefono").value      = datos.telefono || "";
+      document.getElementById("cfgWhatsapp").value      = datos.whatsapp || "";
+      document.getElementById("cfgEmail").value         = datos.email || "";
+      document.getElementById("cfgCbu").value           = datos.cbu || "";
+      document.getElementById("cfgAlias").value         = datos.alias || "";
+      document.getElementById("cfgPrecioConsulta").value = datos.precioConsulta || "";
+      document.getElementById("cfgLogoIcono").value     = datos.logoIcono || "";
+      document.getElementById("cfgDiasChat").value      = datos.diasChat || 10;
+
+      // Colores
+      const cp = datos.colorPrimario || "#667eea";
+      const cs = datos.colorSecundario || "#764ba2";
+      document.getElementById("cfgColorPrimario").value    = cp;
+      document.getElementById("cfgColorPrimarioHex").value = cp;
+      document.getElementById("cfgColorSecundario").value    = cs;
+      document.getElementById("cfgColorSecundarioHex").value = cs;
+
+      // Mensajes
+      document.getElementById("cfgMsgConfirmado").value    = datos.msgConfirmado    || `Hola {nombre}! Tu turno con la {dra} está confirmado para el {fecha} a las {hora}. Consultorio: {direccion}. ¡Nos vemos! 🩺`;
+      document.getElementById("cfgMsgRecordatorio").value  = datos.msgRecordatorio  || `Hola {nombre}! Te recordamos que mañana tenés turno con la {dra} a las {hora}. Consultorio: {direccion}. Si no podés asistir, avisanos con anticipación.`;
+      document.getElementById("cfgMsgTeleconsulta").value  = datos.msgTeleconsulta  || `Hola! Le escribo de parte de la {dra}. En unos minutos iniciamos la teleconsulta por videollamada de WhatsApp.`;
+      document.getElementById("cfgMsgCancelado").value     = datos.msgCancelado     || `Hola {nombre}, te informamos que tu turno del {fecha} a las {hora} fue cancelado. Podés sacar un nuevo turno desde la app.`;
+
+      // Fotos
+      if (datos.fotoBase64) {
+        fotoBase64 = datos.fotoBase64;
+        document.getElementById("fotoPreview").innerHTML = `<img src="${fotoBase64}" alt="foto" />`;
+        document.getElementById("btnQuitarFoto").style.display = "block";
+      } else {
+        document.getElementById("fotoPreview").innerHTML = `<span id="fotoIniciales">${datos.iniciales || "VG"}</span>`;
+      }
+      if (datos.logoBase64) {
+        logoBase64 = datos.logoBase64;
+        document.getElementById("logoPreview").innerHTML = `<img src="${logoBase64}" alt="logo" />`;
+        document.getElementById("btnQuitarLogo").style.display = "block";
+      } else {
+        document.getElementById("logoPreview").innerHTML = `<span id="logoLetra">${datos.logoIcono || "P"}</span>`;
+      }
+      if (datos.qrBase64) {
+        qrBase64 = datos.qrBase64;
+        document.getElementById("qrPreview").innerHTML = `<img src="${qrBase64}" alt="QR" />`;
+        document.getElementById("btnQuitarQR").style.display = "block";
+      }
+
+      // Duracion turno
+      if (datos.duracionTurno) document.getElementById("cfgDuracionTurno").value = datos.duracionTurno;
+
+      // Horarios
+      renderDias(datos.horarios || {});
+
+      // Usuario
+      const snapAcceso = await getDoc(doc(db, "configuracion", "acceso"));
+      if (snapAcceso.exists()) {
+        document.getElementById("cfgUsuario").value = snapAcceso.data().usuario || "dra.guerra";
+      } else {
+        document.getElementById("cfgUsuario").value = "dra.guerra";
+      }
+
+    } catch (e) {
+      console.error(e);
+      renderDias({});
+      toast("Error al cargar configuración", "error");
+    }
+  }
+
+  // ── GUARDAR SECCIONES ─────────────────────────────────────────
+  window.guardarSeccion = async function(seccion) {
+    const btn = event.target;
+    btn.classList.add("guardando");
+    btn.textContent = "⏳ Guardando...";
+
+    try {
+      if (seccion === "perfil") {
+        const datos = {
+          colorPrimario:    document.getElementById("cfgColorPrimarioHex").value || document.getElementById("cfgColorPrimario").value,
+          colorSecundario:  document.getElementById("cfgColorSecundarioHex").value || document.getElementById("cfgColorSecundario").value,
+          logoIcono:        document.getElementById("cfgLogoIcono").value,
+        };
+        if (fotoBase64 !== null) datos.fotoBase64 = fotoBase64;
+        if (logoBase64 !== null) datos.logoBase64 = logoBase64;
+        await setDoc(doc(db, "configuracion", "perfil"), datos, { merge: true });
+
+      } else if (seccion === "datos") {
+        await setDoc(doc(db, "configuracion", "perfil"), {
+          nombre:       document.getElementById("cfgNombre").value.trim(),
+          nombreCorto:  document.getElementById("cfgNombreCorto").value.trim(),
+          titulo:       document.getElementById("cfgTitulo").value.trim(),
+          especialidad: document.getElementById("cfgEspecialidad").value.trim(),
+          matricula:    document.getElementById("cfgMatricula").value.trim(),
+          iniciales:    document.getElementById("cfgIniciales").value.trim().toUpperCase(),
+          nombreApp:    document.getElementById("cfgNombreApp").value.trim(),
+          direccion:    document.getElementById("cfgDireccion").value.trim(),
+          telefono:     document.getElementById("cfgTelefono").value.trim(),
+          whatsapp:     document.getElementById("cfgWhatsapp").value.trim(),
+          email:        document.getElementById("cfgEmail").value.trim(),
+        }, { merge: true });
+
+      } else if (seccion === "horarios") {
+        const horarios = {};
+        DIAS.forEach(d => {
+          horarios[d.key] = {
+            activo: document.getElementById("chk_" + d.key).checked,
+            desde:  document.getElementById("desde_" + d.key).value,
+            hasta:  document.getElementById("hasta_" + d.key).value,
+          };
+        });
+        await setDoc(doc(db, "configuracion", "horarios"), {
+          horarios,
+          duracionTurno: Number(document.getElementById("cfgDuracionTurno").value)
+        }, { merge: true });
+
+      } else if (seccion === "pagos") {
+        const datos = {
+          cbu:            document.getElementById("cfgCbu").value.trim(),
+          alias:          document.getElementById("cfgAlias").value.trim(),
+          precioConsulta: Number(document.getElementById("cfgPrecioConsulta").value) || 0,
+        };
+        if (qrBase64 !== null) datos.qrBase64 = qrBase64;
+        await setDoc(doc(db, "configuracion", "pagos"), datos, { merge: true });
+
+      } else if (seccion === "mensajes") {
+        await setDoc(doc(db, "configuracion", "mensajes"), {
+          msgConfirmado:   document.getElementById("cfgMsgConfirmado").value.trim(),
+          msgRecordatorio: document.getElementById("cfgMsgRecordatorio").value.trim(),
+          msgTeleconsulta: document.getElementById("cfgMsgTeleconsulta").value.trim(),
+          msgCancelado:    document.getElementById("cfgMsgCancelado").value.trim(),
+          diasChat:        Number(document.getElementById("cfgDiasChat").value) || 10,
+        }, { merge: true });
+      }
+
+      toast("¡Guardado correctamente!");
+    } catch (e) {
+      console.error(e);
+      toast("Error al guardar. Revisá la conexión.", "error");
+    }
+
+    btn.classList.remove("guardando");
+    btn.textContent = "💾 Guardar" + (seccion === "perfil" ? " foto y colores" : seccion === "datos" ? " datos" : seccion === "horarios" ? " horarios" : seccion === "pagos" ? " datos de cobro" : " mensajes");
+  };
+
+  // ── CAMBIAR CONTRASEÑA ────────────────────────────────────────
+  window.cambiarPassword = async function() {
+    const usuario   = document.getElementById("cfgUsuario").value.trim();
+    const actual    = document.getElementById("cfgPassActual").value;
+    const nueva     = document.getElementById("cfgPassNueva").value;
+    const repetir   = document.getElementById("cfgPassRepetir").value;
+
+    if (!usuario)  { toast("Ingresá un nombre de usuario", "error"); return; }
+    if (!actual)   { toast("Ingresá tu contraseña actual", "error"); return; }
+    if (!nueva)    { toast("Ingresá la nueva contraseña", "error"); return; }
+    if (nueva.length < 6) { toast("La contraseña debe tener al menos 6 caracteres", "error"); return; }
+    if (nueva !== repetir) { toast("Las contraseñas no coinciden", "error"); return; }
+
+    try {
+      const snap = await getDoc(doc(db, "configuracion", "acceso"));
+      const passActualGuardada = snap.exists() ? snap.data().password : "VeroGuerra";
+      const usuarioGuardado    = snap.exists() ? snap.data().usuario  : "dra.guerra";
+
+      if (actual !== passActualGuardada) {
+        toast("La contraseña actual es incorrecta", "error");
+        return;
+      }
+
+      await setDoc(doc(db, "configuracion", "acceso"), {
+        usuario: usuario,
+        password: nueva,
+        actualizadoEn: new Date().toISOString()
+      });
+
+      document.getElementById("cfgPassActual").value  = "";
+      document.getElementById("cfgPassNueva").value   = "";
+      document.getElementById("cfgPassRepetir").value = "";
+      document.getElementById("passStrength").className = "pass-strength";
+      toast("¡Contraseña actualizada correctamente!");
+    } catch (e) {
+      console.error(e);
+      toast("Error al cambiar contraseña", "error");
+    }
+  };
+
+  // ── INICIAR ───────────────────────────────────────────────────
+  cargarConfig();
+</script>
+
+</body>
+</html>
