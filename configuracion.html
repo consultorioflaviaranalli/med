@@ -319,23 +319,16 @@
         <span class="seccion-icono">🕐</span>
         <div>
           <div class="seccion-titulo">Horarios de atención</div>
-          <div class="seccion-sub">Definí en qué días y horarios se pueden sacar turnos</div>
+          <div class="seccion-sub">Activá los días y marcá los turnos disponibles para presencial y teleconsulta</div>
         </div>
       </div>
 
-      <div id="diasContainer"></div>
+      <p style="font-size:13px;color:#718096;margin-bottom:12px;">
+        Hacé clic en un día para expandirlo. Activá o desactivá cada turno de 30 minutos individualmente.
+        Los turnos marcados quedan disponibles para que los pacientes reserven.
+      </p>
 
-      <div class="duracion-row">
-        <label>⏱️ Duración de cada turno:</label>
-        <select id="cfgDuracionTurno" class="campo-input" style="max-width:130px;padding:7px 10px;">
-          <option value="15">15 minutos</option>
-          <option value="20">20 minutos</option>
-          <option value="30" selected>30 minutos</option>
-          <option value="40">40 minutos</option>
-          <option value="45">45 minutos</option>
-          <option value="60">1 hora</option>
-        </select>
-      </div>
+      <div id="diasContainer"></div>
 
       <div class="btn-row">
         <button class="btn-guardar" onclick="guardarSeccion('horarios')">💾 Guardar horarios</button>
@@ -572,63 +565,137 @@
     setTimeout(() => t.className = "toast", 3000);
   }
 
-  // ── HORARIOS: render ─────────────────────────────────────────
-  const DIAS = [
-    { key: "lunes",     label: "Lunes" },
-    { key: "martes",    label: "Martes" },
-    { key: "miercoles", label: "Miércoles" },
-    { key: "jueves",    label: "Jueves" },
-    { key: "viernes",   label: "Viernes" },
-    { key: "sabado",    label: "Sábado" },
-    { key: "domingo",   label: "Domingo" },
+  // ── HORARIOS: sistema de slots ───────────────────────────────
+  const DIAS_INFO = [
+    { num: 1, key: "lunes",     label: "Lunes" },
+    { num: 2, key: "martes",    label: "Martes" },
+    { num: 3, key: "miercoles", label: "Miércoles" },
+    { num: 4, key: "jueves",    label: "Jueves" },
+    { num: 5, key: "viernes",   label: "Viernes" },
+    { num: 6, key: "sabado",    label: "Sábado" },
+    { num: 0, key: "domingo",   label: "Domingo" },
   ];
 
-  function horasOpciones(selVal) {
-    let opts = "";
-    for (let h = 7; h <= 21; h++) {
-      for (let m of ["00", "30"]) {
-        const val = `${String(h).padStart(2,"0")}:${m}`;
-        opts += `<option value="${val}" ${val === selVal ? "selected" : ""}>${val}</option>`;
-      }
-    }
-    return opts;
+  function pad(n) { return String(n).padStart(2, "0"); }
+
+  function rangeToSlots(inicio, fin) {
+    const s = [];
+    const sM = inicio.split(":").map(Number).reduce((a,b,i)=>i===0?b*60:a+b,0);
+    const eM = fin === "24:00" ? 1440 : fin.split(":").map(Number).reduce((a,b,i)=>i===0?b*60:a+b,0);
+    for (let m = sM; m < eM; m += 30) s.push(pad(Math.floor(m/60)) + ":" + pad(m%60));
+    return s;
+  }
+
+  function todosSlots() { return rangeToSlots("07:00", "21:00"); }
+  function defaultSlots() { return rangeToSlots("07:00", "21:00"); }
+
+  const estadoDias = {};
+  DIAS_INFO.forEach(d => {
+    estadoDias[d.num] = {
+      activo: d.num >= 1 && d.num <= 5,
+      presencial:   { activo: true, slots: defaultSlots() },
+      telemedicina: { activo: true, slots: defaultSlots() }
+    };
+  });
+
+  function resumenDia(num) {
+    const d = estadoDias[num];
+    const p = [];
+    if (d.presencial.activo   && d.presencial.slots.length)   p.push("🏥 " + d.presencial.slots.length + " turnos");
+    if (d.telemedicina.activo && d.telemedicina.slots.length) p.push("💻 " + d.telemedicina.slots.length + " turnos");
+    return p.length ? p.join("  ·  ") : "Sin turnos configurados";
+  }
+
+  function htmlSlotGrid(num, tipo) {
+    const activos = new Set(estadoDias[num][tipo].slots);
+    return "<div style='display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px;'>"
+      + todosSlots().map(s =>
+          "<button style='padding:7px 4px;border-radius:8px;font-size:11px;cursor:pointer;text-align:center;border:1px solid " + (activos.has(s) ? "#667eea" : "#e2e8f0") + ";background:" + (activos.has(s) ? "#ebf4ff" : "#f7fafc") + ";color:" + (activos.has(s) ? "#667eea" : "#a0aec0") + ";font-weight:" + (activos.has(s) ? "600" : "400") + ";font-family:inherit;' onclick="toggleSlot(" + num + ",'" + tipo + "','" + s + "',this)'>" + s + "</button>"
+        ).join("")
+      + "</div>";
+  }
+
+  function htmlTipoDia(num, tipo) {
+    const cfg = estadoDias[num][tipo];
+    const esP = tipo === "presencial";
+    const colorBorder = cfg.activo ? "#c3d0f7" : "#e2e8f0";
+    const colorBg = cfg.activo ? "#f8f9ff" : "#fafafa";
+    return "<div style='border:1px solid " + colorBorder + ";border-radius:10px;padding:12px 14px;margin-top:10px;background:" + colorBg + ";'>"
+      + "<div style='display:flex;align-items:center;gap:10px;'>"
+      + "<div style='position:relative;width:40px;height:22px;background:" + (cfg.activo ? "#667eea" : "#e2e8f0") + ";border-radius:11px;cursor:pointer;flex-shrink:0;' onclick='toggleTipoDia(" + num + ",\'" + tipo + "\")'>"
+      + "<div style='position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:2px;left:" + (cfg.activo ? "20px" : "2px") + ";box-shadow:0 1px 3px rgba(0,0,0,.2);'></div></div>"
+      + "<div><div style='font-size:14px;font-weight:600;color:#2d3748;'>" + (esP ? "🏥 Presencial" : "💻 Teleconsulta") + "</div>"
+      + "<div style='font-size:12px;color:#a0aec0;'>" + (esP ? "Consulta en consultorio" : "Videollamada por WhatsApp") + "</div></div></div>"
+      + (cfg.activo ? htmlSlotGrid(num, tipo) : "")
+      + "</div>";
+  }
+
+  function htmlDiaCard(num) {
+    const d = estadoDias[num];
+    const info = DIAS_INFO.find(x => x.num === num);
+    const borderColor = d.activo ? "#667eea" : "#e2e8f0";
+    return "<div style='border:2px solid " + borderColor + ";border-radius:12px;margin-bottom:10px;overflow:hidden;' id='diaCard_" + num + "'>"
+      + "<div style='display:flex;align-items:center;gap:12px;padding:14px 16px;'>"
+      + "<div style='position:relative;width:40px;height:22px;background:" + (d.activo ? "#667eea" : "#e2e8f0") + ";border-radius:11px;cursor:pointer;flex-shrink:0;' onclick='toggleDiaSlot(" + num + ")'>"
+      + "<div style='position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:2px;left:" + (d.activo ? "20px" : "2px") + ";box-shadow:0 1px 3px rgba(0,0,0,.2);'></div></div>"
+      + "<span style='font-size:15px;font-weight:600;color:#2d3748;min-width:90px;'>" + info.label + "</span>"
+      + "<span style='font-size:13px;color:" + (d.activo ? "#667eea" : "#a0aec0") + ";flex:1;'>" + (d.activo ? resumenDia(num) : "Sin turnos") + "</span>"
+      + "</div>"
+      + (d.activo ? "<div style='padding:0 16px 16px;'>" + htmlTipoDia(num, "presencial") + htmlTipoDia(num, "telemedicina") + "</div>" : "")
+      + "</div>";
   }
 
   function renderDias(horariosData) {
+    if (horariosData && horariosData.dias) {
+      DIAS_INFO.forEach(di => {
+        const src = horariosData.dias[String(di.num)];
+        if (!src) return;
+        estadoDias[di.num].activo = src.activo === true;
+        ["presencial","telemedicina"].forEach(t => {
+          if (!src[t]) return;
+          estadoDias[di.num][t].activo = src[t].activo !== false;
+          if (src[t].slots) estadoDias[di.num][t].slots = src[t].slots;
+        });
+      });
+    }
     const cont = document.getElementById("diasContainer");
-    cont.innerHTML = "";
-    DIAS.forEach(d => {
-      const info   = (horariosData && horariosData[d.key]) || {};
-      const activo = info.activo !== undefined ? info.activo : (d.key !== "sabado" && d.key !== "domingo");
-      const desde  = info.desde  || "09:00";
-      const hasta  = info.hasta  || "18:00";
-
-      const row = document.createElement("div");
-      row.className = "dia-row" + (activo ? "" : " dia-desactivado");
-      row.id = "diaRow_" + d.key;
-      row.innerHTML = `
-        <div class="dia-toggle">
-          <label class="switch">
-            <input type="checkbox" id="chk_${d.key}" ${activo ? "checked" : ""} onchange="toggleDia('${d.key}')">
-            <span class="slider"></span>
-          </label>
-          <span class="dia-nombre">${d.label}</span>
-        </div>
-        <div class="horario-inputs">
-          <span class="horario-sep">Desde</span>
-          <select id="desde_${d.key}">${horasOpciones(desde)}</select>
-          <span class="horario-sep">hasta</span>
-          <select id="hasta_${d.key}">${horasOpciones(hasta)}</select>
-        </div>
-      `;
-      cont.appendChild(row);
-    });
+    cont.innerHTML = DIAS_INFO.map(d => htmlDiaCard(d.num)).join("");
   }
 
-  window.toggleDia = function(key) {
-    const chk = document.getElementById("chk_" + key);
-    const row = document.getElementById("diaRow_" + key);
-    row.classList.toggle("dia-desactivado", !chk.checked);
+  window.toggleDiaSlot = function(num) {
+    estadoDias[num].activo = !estadoDias[num].activo;
+    const cont = document.getElementById("diasContainer");
+    cont.innerHTML = DIAS_INFO.map(d => htmlDiaCard(d.num)).join("");
+  };
+
+  window.toggleTipoDia = function(num, tipo) {
+    estadoDias[num][tipo].activo = !estadoDias[num][tipo].activo;
+    const cont = document.getElementById("diasContainer");
+    cont.innerHTML = DIAS_INFO.map(d => htmlDiaCard(d.num)).join("");
+  };
+
+  window.toggleSlot = function(num, tipo, slot, btn) {
+    const slots = estadoDias[num][tipo].slots;
+    const idx = slots.indexOf(slot);
+    if (idx >= 0) {
+      slots.splice(idx, 1);
+      btn.style.borderColor = "#e2e8f0";
+      btn.style.background = "#f7fafc";
+      btn.style.color = "#a0aec0";
+      btn.style.fontWeight = "400";
+    } else {
+      slots.push(slot); slots.sort();
+      btn.style.borderColor = "#667eea";
+      btn.style.background = "#ebf4ff";
+      btn.style.color = "#667eea";
+      btn.style.fontWeight = "600";
+    }
+    // Actualizar resumen
+    const card = document.getElementById("diaCard_" + num);
+    if (card) {
+      const res = card.querySelector("span:last-of-type");
+      if (res) res.textContent = resumenDia(num);
+    }
   };
 
   // ── FOTOS ─────────────────────────────────────────────────────
@@ -819,8 +886,8 @@
       // Duracion turno
       if (datos.duracionTurno) document.getElementById("cfgDuracionTurno").value = datos.duracionTurno;
 
-      // Horarios
-      renderDias(datos.horarios || {});
+      // Horarios — cargar desde snapHorarios directamente
+      renderDias(snapHorarios.exists() ? snapHorarios.data() : {});
 
       // Usuario
       const snapAcceso = await getDoc(doc(db, "configuracion", "acceso"));
@@ -870,18 +937,16 @@
         }, { merge: true });
 
       } else if (seccion === "horarios") {
-        const horarios = {};
-        DIAS.forEach(d => {
-          horarios[d.key] = {
-            activo: document.getElementById("chk_" + d.key).checked,
-            desde:  document.getElementById("desde_" + d.key).value,
-            hasta:  document.getElementById("hasta_" + d.key).value,
+        const diasData = {};
+        DIAS_INFO.forEach(d => {
+          const st = estadoDias[d.num];
+          diasData[String(d.num)] = {
+            activo: st.activo,
+            presencial:   { activo: st.presencial.activo,   slots: st.presencial.slots   },
+            telemedicina: { activo: st.telemedicina.activo, slots: st.telemedicina.slots }
           };
         });
-        await setDoc(doc(db, "configuracion", "horarios"), {
-          horarios,
-          duracionTurno: Number(document.getElementById("cfgDuracionTurno").value)
-        }, { merge: true });
+        await setDoc(doc(db, "configuracion", "horarios"), { dias: diasData }, { merge: true });
 
       } else if (seccion === "pagos") {
         const datos = {
