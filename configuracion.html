@@ -539,6 +539,15 @@ async function cargar() {
     get("dWhatsapp","whatsapp","whatsapp");
     get("dEmail","email","email");
 
+    // Actualizar topbar
+    const ini = p.iniciales || CONFIG.iniciales || "FR";
+    const nom = (p.nombreCorto || CONFIG.nombreCorto || "Dra. Ranalli");
+    document.getElementById("topAvatar").textContent = ini;
+    document.getElementById("topNombre").textContent = nom;
+    if (p.fotoBase64) {
+      document.getElementById("topAvatar").innerHTML = `<img src="${p.fotoBase64}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    }
+
     // Foto/logo
     if (p.fotoBase64) { fotoB64=p.fotoBase64; setPreview("fotoPreview",fotoB64,true); show("btnQFoto"); }
     else { document.getElementById("fotoPreview").innerHTML = `<span id="fotoIniciales">${p.iniciales||CONFIG.iniciales||"FR"}</span>`; }
