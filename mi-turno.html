@@ -5,7 +5,7 @@
     
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mi Turno - Dra. Guerra</title>
+    <title>Mi Turno</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -140,30 +140,10 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-    import { getFirestore, collection, query, where, getDocs, addDoc, onSnapshot, orderBy, getDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { getFirestore, collection, query, where, getDocs, addDoc, onSnapshot, orderBy } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAxr6HVePo0BeLyV7-QuH668OpZqVOrm2s",
-        authDomain: "consultorio-pediatrico-30cc2.firebaseapp.com",
-        projectId: "consultorio-pediatrico-30cc2",
-        storageBucket: "consultorio-pediatrico-30cc2.firebasestorage.app",
-        messagingSenderId: "806158143244",
-        appId: "1:806158143244:web:315f13af8d5dc41c0cc329"
-    };
-
-    const app = initializeApp(firebaseConfig);
+    const app = initializeApp(CONFIG.firebase);
     const db = getFirestore(app);
-
-    // Nombre del profesional: fallback a config.js, override desde Firestore
-    let perfil = {
-        titulo:      CONFIG.titulo      || "Dra.",
-        nombre:      CONFIG.nombre      || "",
-        nombreCorto: CONFIG.nombreCorto || "",
-        especialidad: CONFIG.especialidad || ""
-    };
-    getDoc(doc(db, "configuracion", "perfil")).then(snap => {
-        if (snap.exists()) perfil = { ...perfil, ...snap.data() };
-    }).catch(() => {});
 
     let turnoActual = null;
 
@@ -215,7 +195,7 @@
             <p><strong>Fecha:</strong> ${fechaFormateada}</p>
             <p><strong>Hora:</strong> ${t.hora}hs</p>
             <p><strong>Motivo:</strong> ${t.motivo || "—"}</p>
-            <p><strong>Profesional:</strong> ${perfil.titulo} ${perfil.nombre}</p>
+            <p><strong>Profesional:</strong> Dra. Guerra Verónica</p>
         `;
 
         // Calcular si el chat está habilitado (10 días desde la fecha del turno)
@@ -279,7 +259,7 @@
                 const div = document.createElement("div");
                 div.className = "msg-burbuja " + (esPaciente ? "msg-paciente" : "msg-dra");
                 div.innerHTML = `
-                    ${!esPaciente ? `<div class="msg-quien">${perfil.nombreCorto}</div>` : ""}
+                    ${!esPaciente ? `<div class="msg-quien">Dra. Guerra</div>` : ""}
                     ${m.texto}
                     <div class="msg-hora">${hora}</div>
                 `;
