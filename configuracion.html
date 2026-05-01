@@ -1133,8 +1133,14 @@
   }
 
   // ── INICIAR ───────────────────────────────────────────────────
-  // Renderizar días inmediatamente con defaults, luego cargarConfig actualiza
-  renderDias({});
+  // Esperar a que el DOM esté completamente listo
+  document.addEventListener("DOMContentLoaded", () => {
+    buildDiasUI();
+  });
+  // También llamar directo por si DOMContentLoaded ya pasó (módulos se cargan tarde)
+  if (document.readyState === "complete" || document.readyState === "interactive") {
+    buildDiasUI();
+  }
   cargarConfig();
   cargarFirma();
 </script>
