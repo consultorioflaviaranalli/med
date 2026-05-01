@@ -5,156 +5,105 @@
   <script src="init.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Configuración – VERO</title>
+  <title>Configuración – Panel Médico</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Segoe UI', sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; }
-
-    /* ── TOPBAR ── */
     .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 0 2rem; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
     .topbar-left { display: flex; align-items: center; gap: 12px; }
     .logo-circle { width: 38px; height: 38px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
     .topbar h1 { font-size: 17px; font-weight: 600; color: #2d3748; }
     .topbar h1 span { color: #667eea; }
     .topbar-right { display: flex; align-items: center; gap: 16px; }
-    .badge-online { font-size: 12px; background: #c6f6d5; color: #276749; padding: 4px 10px; border-radius: 20px; font-weight: 500; }
     .user-chip { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #4a5568; }
     .user-avatar { width: 32px; height: 32px; border-radius: 50%; background: #667eea; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
     .btn-logout { background: none; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 13px; color: #718096; cursor: pointer; }
-    .btn-logout:hover { background: #fff5f5; color: #e53e3e; border-color: #fed7d7; }
-
-    /* ── LAYOUT ── */
     .layout { display: flex; min-height: calc(100vh - 64px); }
     .sidebar { width: 230px; background: #fff; border-right: 1px solid #e2e8f0; padding: 1.5rem 0; flex-shrink: 0; }
     .nav-section { padding: 0 1rem 0.5rem; font-size: 11px; font-weight: 600; letter-spacing: .08em; color: #a0aec0; text-transform: uppercase; margin-top: 1rem; }
-    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.5rem; font-size: 14px; color: #4a5568; cursor: pointer; text-decoration: none; transition: all .15s; }
-    .nav-item:hover { background: #f7fafc; color: #2d3748; }
+    .nav-item { display: flex; align-items: center; gap: 10px; padding: 10px 1.5rem; font-size: 14px; color: #4a5568; text-decoration: none; }
+    .nav-item:hover { background: #f7fafc; }
     .nav-item.active { background: #ebf4ff; color: #3182ce; font-weight: 500; border-right: 3px solid #3182ce; }
     .nav-icon { font-size: 17px; width: 22px; text-align: center; }
     .main { flex: 1; padding: 2rem; overflow-y: auto; max-width: 900px; }
-
-    /* ── HEADER ── */
     .page-header { margin-bottom: 1.5rem; }
-    .page-header h2 { font-size: 22px; font-weight: 600; color: #2d3748; }
+    .page-header h2 { font-size: 22px; font-weight: 600; }
     .page-header p { font-size: 14px; color: #718096; margin-top: 4px; }
-
-    /* ── SECCIONES ── */
     .seccion { background: #fff; border-radius: 14px; border: 1px solid #e2e8f0; padding: 1.5rem; margin-bottom: 1.5rem; }
-    .seccion-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid #f0f4f8; }
-    .seccion-icono { font-size: 22px; }
-    .seccion-titulo { font-size: 16px; font-weight: 600; color: #2d3748; }
-    .seccion-sub { font-size: 13px; color: #a0aec0; margin-top: 2px; }
-
-    /* ── FORM ── */
-    .campo-grupo { margin-bottom: 1rem; }
-    .campo-label { display: block; font-size: 12px; color: #718096; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 5px; font-weight: 500; }
-    .campo-input { width: 100%; padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; color: #2d3748; outline: none; background: #fff; transition: border-color .15s; }
-    .campo-input:focus { border-color: #667eea; box-shadow: 0 0 0 3px rgba(102,126,234,.1); }
-    textarea.campo-input { resize: vertical; min-height: 80px; line-height: 1.5; }
-    .campo-hint { font-size: 11px; color: #a0aec0; margin-top: 4px; }
-
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-    @media (max-width: 700px) { .grid-2, .grid-3 { grid-template-columns: 1fr; } }
-
-    /* ── FOTO/LOGO ── */
-    .foto-area { display: flex; align-items: flex-start; gap: 2rem; flex-wrap: wrap; }
-    .foto-slot { text-align: center; }
-    .foto-label-title { font-size: 12px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 10px; }
-    .foto-preview { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 32px; margin: 0 auto 10px; overflow: hidden; border: 3px solid #e2e8f0; cursor: pointer; position: relative; }
-    .foto-preview img { width: 100%; height: 100%; object-fit: cover; }
-    .foto-preview:hover::after { content: "📷"; position: absolute; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 50%; }
-    .logo-preview { width: 100px; height: 100px; border-radius: 16px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 32px; margin: 0 auto 10px; overflow: hidden; border: 3px solid #e2e8f0; cursor: pointer; position: relative; }
-    .logo-preview img { width: 100%; height: 100%; object-fit: contain; padding: 8px; }
-    .logo-preview:hover::after { content: "📷"; position: absolute; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: center; justify-content: center; font-size: 24px; border-radius: 16px; }
-    .btn-upload { font-size: 12px; background: #f7fafc; border: 1px solid #e2e8f0; color: #4a5568; padding: 6px 14px; border-radius: 8px; cursor: pointer; }
-    .btn-upload:hover { background: #ebf4ff; border-color: #667eea; color: #667eea; }
+    .sec-header { display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem; padding-bottom: 1rem; border-bottom: 1px solid #f0f4f8; }
+    .sec-icono { font-size: 22px; }
+    .sec-titulo { font-size: 16px; font-weight: 600; color: #2d3748; }
+    .sec-sub { font-size: 13px; color: #a0aec0; margin-top: 2px; }
+    .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    @media(max-width:600px){ .grid2 { grid-template-columns: 1fr; } }
+    .campo { display: flex; flex-direction: column; gap: 5px; }
+    .campo label { font-size: 12px; color: #718096; font-weight: 600; text-transform: uppercase; letter-spacing: .05em; }
+    .campo input, .campo select, .campo textarea { padding: 10px 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; font-family: inherit; color: #2d3748; background: #fff; }
+    .campo input:focus, .campo select:focus, .campo textarea:focus { border-color: #667eea; outline: none; box-shadow: 0 0 0 3px rgba(102,126,234,.1); }
+    .campo textarea { resize: vertical; min-height: 80px; }
+    .hint { font-size: 11px; color: #a0aec0; }
+    .btn-guardar { background: #667eea; color: #fff; border: none; padding: 11px 28px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 1rem; }
+    .btn-guardar:hover { background: #5a67d8; }
+    .btn-upload { font-size: 12px; background: #f7fafc; border: 1px solid #e2e8f0; color: #4a5568; padding: 6px 14px; border-radius: 8px; cursor: pointer; margin-top: 6px; }
+    .toast { position: fixed; bottom: 24px; right: 24px; background: #276749; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; }
+    .toast.show { opacity: 1; transform: translateY(0); }
+    .toast.error { background: #c53030; }
+    hr { border: none; border-top: 1px solid #f0f4f8; margin: 1rem 0; }
     input[type="file"] { display: none; }
 
-    /* ── HORARIOS ── */
-    .dia-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid #f0f4f8; flex-wrap: wrap; }
-    .dia-row:last-child { border-bottom: none; }
-    .dia-toggle { display: flex; align-items: center; gap: 8px; min-width: 130px; }
-    .switch { position: relative; display: inline-block; width: 40px; height: 22px; flex-shrink: 0; }
-    .switch input { opacity: 0; width: 0; height: 0; }
-    .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #e2e8f0; border-radius: 22px; transition: .2s; }
-    .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
-    input:checked + .slider { background: #667eea; }
-    input:checked + .slider:before { transform: translateX(18px); }
-    .dia-nombre { font-size: 14px; font-weight: 500; color: #2d3748; width: 90px; }
-    .horario-inputs { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .horario-inputs select { padding: 6px 8px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 13px; font-family: inherit; color: #2d3748; outline: none; background: #fff; }
-    .horario-inputs select:focus { border-color: #667eea; }
-    .horario-sep { font-size: 13px; color: #a0aec0; }
-    .dia-desactivado .horario-inputs { opacity: 0.3; pointer-events: none; }
-    .duracion-row { display: flex; align-items: center; gap: 10px; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #f0f4f8; }
-    .duracion-row label { font-size: 13px; color: #4a5568; font-weight: 500; white-space: nowrap; }
+    /* FOTOS */
+    .foto-area { display: flex; gap: 2rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .foto-slot { text-align: center; }
+    .foto-label { font-size: 11px; font-weight: 600; color: #718096; text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+    .foto-circle { width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 32px; margin: 0 auto 8px; overflow: hidden; border: 3px solid #e2e8f0; cursor: pointer; }
+    .logo-square { width: 100px; height: 100px; border-radius: 16px; background: linear-gradient(135deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 32px; margin: 0 auto 8px; overflow: hidden; border: 3px solid #e2e8f0; cursor: pointer; }
+    .foto-circle img, .logo-square img { width: 100%; height: 100%; object-fit: cover; }
 
-    /* ── PAGOS ── */
-    .qr-area { display: flex; align-items: flex-start; gap: 1.5rem; flex-wrap: wrap; }
-    .qr-preview { width: 120px; height: 120px; border: 2px dashed #e2e8f0; border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 6px; cursor: pointer; transition: border-color .15s; background: #f7fafc; }
-    .qr-preview:hover { border-color: #667eea; background: #ebf4ff; }
-    .qr-preview img { width: 100%; height: 100%; object-fit: contain; border-radius: 10px; }
-    .qr-preview span { font-size: 11px; color: #a0aec0; text-align: center; }
-    .qr-fields { flex: 1; min-width: 200px; }
+    /* HORARIOS */
+    .dia-card { border: 2px solid #e2e8f0; border-radius: 12px; margin-bottom: 10px; overflow: hidden; }
+    .dia-card.on { border-color: #667eea; }
+    .dia-header { display: flex; align-items: center; gap: 12px; padding: 14px 16px; }
+    .dia-nombre { font-size: 15px; font-weight: 600; color: #2d3748; min-width: 100px; }
+    .dia-resumen { font-size: 13px; color: #a0aec0; flex: 1; }
+    .dia-card.on .dia-resumen { color: #667eea; }
+    .dia-body { padding: 0 16px 16px; }
+    .tipo-bloque { border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; margin-top: 10px; background: #fafafa; }
+    .tipo-bloque.on { border-color: #c3d0f7; background: #f8f9ff; }
+    .tipo-header { display: flex; align-items: center; gap: 10px; }
+    .tipo-nombre { font-size: 14px; font-weight: 600; color: #2d3748; }
+    .tipo-sub { font-size: 12px; color: #a0aec0; }
+    .slot-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 5px; margin-top: 10px; }
+    .slot { padding: 7px 2px; border-radius: 8px; font-size: 11px; cursor: pointer; text-align: center; border: 1px solid #e2e8f0; background: #f7fafc; color: #a0aec0; font-family: inherit; }
+    .slot.on { border-color: #667eea; background: #ebf4ff; color: #667eea; font-weight: 600; }
+    .sw { position: relative; width: 40px; height: 22px; border-radius: 11px; cursor: pointer; flex-shrink: 0; transition: background .2s; }
+    .sw-knob { position: absolute; width: 18px; height: 18px; background: #fff; border-radius: 50%; top: 2px; transition: left .2s; box-shadow: 0 1px 3px rgba(0,0,0,.2); }
 
-    /* ── MENSAJES ── */
-    .msg-chip { display: inline-block; background: #ebf4ff; color: #3182ce; padding: 3px 8px; border-radius: 6px; font-size: 11px; font-family: monospace; cursor: pointer; margin: 2px; }
-    .msg-chip:hover { background: #bee3f8; }
-    .variables-hint { font-size: 12px; color: #718096; margin-bottom: 8px; }
+    /* FIRMA */
+    .firma-preview { width: 280px; height: 120px; border: 2px dashed #e2e8f0; border-radius: 12px; background: #fafafa; display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; }
+    .firma-preview img { max-width: 100%; max-height: 100%; object-fit: contain; padding: 8px; }
+    canvas { border: 2px solid #e2e8f0; border-radius: 10px; background: #fff; cursor: crosshair; touch-action: none; max-width: 100%; }
 
-    /* ── SEGURIDAD ── */
-    .pass-strength { height: 4px; border-radius: 2px; margin-top: 6px; transition: all .3s; background: #e2e8f0; }
-    .pass-strength.debil { background: #fc8181; width: 33%; }
-    .pass-strength.media { background: #f6ad55; width: 66%; }
-    .pass-strength.fuerte { background: #68d391; width: 100%; }
-
-    /* ── BOTONES ── */
-    .btn-guardar { background: #667eea; color: #fff; border: none; padding: 11px 28px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: background .15s; }
-    .btn-guardar:hover { background: #5a67d8; }
-    .btn-guardar:active { transform: scale(.98); }
-    .btn-guardar.guardando { background: #a0aec0; pointer-events: none; }
-    .btn-secundario { background: #f7fafc; color: #4a5568; border: 1px solid #e2e8f0; padding: 10px 20px; border-radius: 10px; font-size: 14px; cursor: pointer; }
-    .btn-secundario:hover { background: #ebf4ff; border-color: #667eea; color: #667eea; }
-    .btn-row { display: flex; gap: 10px; margin-top: 1.5rem; flex-wrap: wrap; }
-
-    /* ── TOAST ── */
-    .toast { position: fixed; bottom: 24px; right: 24px; background: #2d3748; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(10px); transition: all .3s; pointer-events: none; display: flex; align-items: center; gap: 8px; }
-    .toast.show { opacity: 1; transform: translateY(0); }
-    .toast.ok { background: #276749; }
-    .toast.error { background: #c53030; }
-
-    /* ── DANGER ── */
-    .seccion-danger { border-color: #fed7d7; background: #fff5f5; }
-    .seccion-danger .seccion-header { border-bottom-color: #fed7d7; }
-    .btn-peligro { background: #fff; color: #e53e3e; border: 1px solid #fed7d7; padding: 10px 20px; border-radius: 10px; font-size: 14px; cursor: pointer; }
-    .btn-peligro:hover { background: #fff5f5; border-color: #e53e3e; }
-
-    .separador { margin: 1.5rem 0; border: none; border-top: 1px solid #f0f4f8; }
-
-    /* ── MOBILE ── */
-    @media (max-width: 700px) {
-      .sidebar { display: none; }
-      .main { padding: 1rem; }
-      .topbar { padding: 0 1rem; }
-      .foto-area { gap: 1rem; }
-    }
+    /* PASS */
+    .pass-bar { height: 4px; border-radius: 2px; margin-top: 6px; background: #e2e8f0; transition: all .3s; }
+    .pass-bar.d { background: #fc8181; width: 33%; }
+    .pass-bar.m { background: #f6ad55; width: 66%; }
+    .pass-bar.f { background: #68d391; width: 100%; }
+    @media(max-width:700px){ .sidebar { display: none; } .main { padding: 1rem; } }
   </style>
 </head>
 <body>
 
 <div class="topbar">
   <div class="topbar-left">
-    <div class="logo-circle">P</div>
+    <div class="logo-circle" id="topLogo">P</div>
     <h1>Pedi<span>Med</span></h1>
   </div>
   <div class="topbar-right">
-    <span class="badge-online">● En línea</span>
     <div class="user-chip">
-      <div class="user-avatar">FR</div>
-      <span>Dra. Ranalli Flavia</span>
+      <div class="user-avatar" id="topAvatar">FR</div>
+      <span id="topNombre">Dra. Ranalli Flavia</span>
     </div>
-    <button class="btn-logout" onclick="location.href='acceso-dra-Guerra.html'">Cerrar sesión</button>
+    <button class="btn-logout" onclick="location.href='acceso-dra-Flavia.html'">Cerrar sesión</button>
   </div>
 </div>
 
@@ -176,370 +125,164 @@
   <main class="main">
     <div class="page-header">
       <h2>⚙️ Configuración</h2>
-      <p>Personalizá tu consultorio: datos, horarios, pagos y mensajes automáticos</p>
+      <p>Datos del consultorio, horarios, pagos, mensajes y seguridad</p>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- 1. PERFIL / FOTO                       -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- FOTO Y LOGO -->
     <div class="seccion">
-      <div class="seccion-header">
-        <span class="seccion-icono">📸</span>
-        <div>
-          <div class="seccion-titulo">Foto y logo</div>
-          <div class="seccion-sub">Imagen de perfil y logo del consultorio</div>
-        </div>
-      </div>
-
+      <div class="sec-header"><span class="sec-icono">📸</span><div><div class="sec-titulo">Foto y logo</div><div class="sec-sub">Imagen de perfil y logo del consultorio</div></div></div>
       <div class="foto-area">
         <div class="foto-slot">
-          <div class="foto-label-title">Foto de perfil</div>
-          <div class="foto-preview" id="fotoPreview" onclick="document.getElementById('inputFoto').click()">
-            <span id="fotoIniciales">FR</span>
-          </div>
-          <input type="file" id="inputFoto" accept="image/*" onchange="cargarFoto(this)">
-          <button class="btn-upload" onclick="document.getElementById('inputFoto').click()">📷 Cambiar foto</button>
-          <button class="btn-upload" style="margin-top:6px;color:#e53e3e;" onclick="quitarFoto()" id="btnQuitarFoto" style="display:none">Quitar foto</button>
+          <div class="foto-label">Foto de perfil</div>
+          <div class="foto-circle" id="fotoPreview" onclick="document.getElementById('inputFoto').click()"><span id="fotoIniciales">FR</span></div>
+          <input type="file" id="inputFoto" accept="image/*" onchange="handleFoto(this)">
+          <div><button class="btn-upload" onclick="document.getElementById('inputFoto').click()">📷 Cambiar</button>
+          <button class="btn-upload" id="btnQFoto" style="color:#e53e3e;display:none" onclick="qFoto()">Quitar</button></div>
         </div>
-
         <div class="foto-slot">
-          <div class="foto-label-title">Logo del consultorio</div>
-          <div class="logo-preview" id="logoPreview" onclick="document.getElementById('inputLogo').click()">
-            <span id="logoLetra">P</span>
-          </div>
-          <input type="file" id="inputLogo" accept="image/*" onchange="cargarLogo(this)">
-          <button class="btn-upload" onclick="document.getElementById('inputLogo').click()">🖼️ Subir logo</button>
-          <button class="btn-upload" style="margin-top:6px;color:#e53e3e;" onclick="quitarLogo()" id="btnQuitarLogo" style="display:none">Quitar logo</button>
+          <div class="foto-label">Logo del consultorio</div>
+          <div class="logo-square" id="logoPreview" onclick="document.getElementById('inputLogo').click()"><span id="logoLetra">P</span></div>
+          <input type="file" id="inputLogo" accept="image/*" onchange="handleLogo(this)">
+          <div><button class="btn-upload" onclick="document.getElementById('inputLogo').click()">🖼️ Subir</button>
+          <button class="btn-upload" id="btnQLogo" style="color:#e53e3e;display:none" onclick="qLogo()">Quitar</button></div>
         </div>
-
         <div style="flex:1;min-width:200px;">
-          <div class="campo-grupo">
-            <label class="campo-label">Letra del logo (si no hay imagen)</label>
-            <input type="text" class="campo-input" id="cfgLogoIcono" maxlength="2" placeholder="P" style="max-width:80px;" />
-            <div class="campo-hint">Se muestra en el círculo cuando no hay logo cargado</div>
-          </div>
-          <div class="campo-grupo">
-            <label class="campo-label">Color primario</label>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <input type="color" id="cfgColorPrimario" style="width:40px;height:36px;border:1px solid #e2e8f0;border-radius:8px;padding:2px;cursor:pointer;" />
-              <input type="text" class="campo-input" id="cfgColorPrimarioHex" placeholder="#667eea" style="max-width:120px;" />
+          <div class="campo" style="margin-bottom:1rem;">
+            <label>Color primario</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="color" id="color1" style="width:40px;height:36px;border:1px solid #e2e8f0;border-radius:8px;padding:2px;cursor:pointer;">
+              <input type="text" id="color1hex" class="campo" style="padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;max-width:110px;" placeholder="#667eea">
             </div>
           </div>
-          <div class="campo-grupo">
-            <label class="campo-label">Color secundario</label>
-            <div style="display:flex;align-items:center;gap:10px;">
-              <input type="color" id="cfgColorSecundario" style="width:40px;height:36px;border:1px solid #e2e8f0;border-radius:8px;padding:2px;cursor:pointer;" />
-              <input type="text" class="campo-input" id="cfgColorSecundarioHex" placeholder="#764ba2" style="max-width:120px;" />
+          <div class="campo">
+            <label>Color secundario</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="color" id="color2" style="width:40px;height:36px;border:1px solid #e2e8f0;border-radius:8px;padding:2px;cursor:pointer;">
+              <input type="text" id="color2hex" class="campo" style="padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;max-width:110px;" placeholder="#764ba2">
             </div>
           </div>
         </div>
       </div>
-      <div class="btn-row">
-        <button class="btn-guardar" onclick="guardarSeccion('perfil')">💾 Guardar foto y colores</button>
-      </div>
+      <button class="btn-guardar" onclick="guardar('perfil')">💾 Guardar foto y colores</button>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- 2. DATOS DEL PROFESIONAL              -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- DATOS -->
     <div class="seccion">
-      <div class="seccion-header">
-        <span class="seccion-icono">👤</span>
-        <div>
-          <div class="seccion-titulo">Datos del profesional</div>
-          <div class="seccion-sub">Se muestran en turnos, fichas y documentos</div>
-        </div>
+      <div class="sec-header"><span class="sec-icono">👤</span><div><div class="sec-titulo">Datos del profesional</div><div class="sec-sub">Se muestran en turnos, fichas y documentos</div></div></div>
+      <div class="grid2">
+        <div class="campo"><label>Apellido y nombre</label><input type="text" id="dNombre" placeholder="Ranalli Flavia"></div>
+        <div class="campo"><label>Nombre corto</label><input type="text" id="dNombreCorto" placeholder="Dra. Ranalli"></div>
+        <div class="campo"><label>Título</label><input type="text" id="dTitulo" placeholder="Dra."></div>
+        <div class="campo"><label>Especialidad</label><input type="text" id="dEspecialidad" placeholder="Pediatría"></div>
+        <div class="campo"><label>Matrícula</label><input type="text" id="dMatricula" placeholder="MP 12345"></div>
+        <div class="campo"><label>Iniciales (avatar)</label><input type="text" id="dIniciales" maxlength="3" placeholder="FR"></div>
       </div>
-
-      <div class="grid-2">
-        <div class="campo-grupo">
-          <label class="campo-label">Apellido y nombre</label>
-          <input type="text" class="campo-input" id="cfgNombre" placeholder="Ej: García María" />
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Nombre corto (para saludos)</label>
-          <input type="text" class="campo-input" id="cfgNombreCorto" placeholder="Ej: Dra. García" />
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Título</label>
-          <input type="text" class="campo-input" id="cfgTitulo" placeholder="Dra." />
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Especialidad</label>
-          <input type="text" class="campo-input" id="cfgEspecialidad" placeholder="Pediatría" />
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Matrícula</label>
-          <input type="text" class="campo-input" id="cfgMatricula" placeholder="MP 12345" />
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Iniciales (para avatar)</label>
-          <input type="text" class="campo-input" id="cfgIniciales" maxlength="3" placeholder="FR" />
-        </div>
+      <hr>
+      <div class="grid2">
+        <div class="campo"><label>Nombre de la app</label><input type="text" id="dApp" placeholder="PediMed"></div>
+        <div class="campo"><label>Dirección</label><input type="text" id="dDireccion" placeholder="Av. Corrientes 1234, CABA"></div>
+        <div class="campo"><label>Teléfono</label><input type="text" id="dTelefono" placeholder="1155556677"></div>
+        <div class="campo"><label>WhatsApp</label><input type="text" id="dWhatsapp" placeholder="5491155556677"></div>
+        <div class="campo"><label>Email</label><input type="email" id="dEmail" placeholder="dra@consultorio.com"></div>
       </div>
-
-      <hr class="separador" />
-
-      <div class="grid-2">
-        <div class="campo-grupo">
-          <label class="campo-label">Nombre de la app / consultorio</label>
-          <input type="text" class="campo-input" id="cfgNombreApp" placeholder="PediMed" />
-          <div class="campo-hint">Aparece en el logo y en la barra superior</div>
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Dirección del consultorio</label>
-          <input type="text" class="campo-input" id="cfgDireccion" placeholder="Av. Corrientes 1234, CABA" />
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Teléfono</label>
-          <input type="text" class="campo-input" id="cfgTelefono" placeholder="1155556677" />
-          <div class="campo-hint">Sin espacios ni guiones, con código de área</div>
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">WhatsApp</label>
-          <input type="text" class="campo-input" id="cfgWhatsapp" placeholder="5491155556677" />
-          <div class="campo-hint">Con código de país (549 + código + número)</div>
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Email</label>
-          <input type="email" class="campo-input" id="cfgEmail" placeholder="dra@consultorio.com" />
-        </div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn-guardar" onclick="guardarSeccion('datos')">💾 Guardar datos</button>
-      </div>
+      <button class="btn-guardar" onclick="guardar('datos')">💾 Guardar datos</button>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- 3. HORARIOS DE ATENCIÓN               -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- HORARIOS -->
     <div class="seccion">
-      <div class="seccion-header">
-        <span class="seccion-icono">🕐</span>
-        <div>
-          <div class="seccion-titulo">Horarios de atención</div>
-          <div class="seccion-sub">Activá los días y marcá los turnos disponibles para presencial y teleconsulta</div>
-        </div>
-      </div>
-
-      <p style="font-size:13px;color:#718096;margin-bottom:12px;">
-        Hacé clic en un día para expandirlo. Activá o desactivá cada turno de 30 minutos individualmente.
-        Los turnos marcados quedan disponibles para que los pacientes reserven.
-      </p>
-
+      <div class="sec-header"><span class="sec-icono">🕐</span><div><div class="sec-titulo">Horarios de atención</div><div class="sec-sub">Activá los días y marcá los turnos disponibles</div></div></div>
+      <p style="font-size:13px;color:#718096;margin-bottom:16px;">Hacé clic en el toggle de cada día para activarlo. Luego activá presencial y/o teleconsulta y marcá los horarios disponibles.</p>
       <div id="diasContainer"></div>
-
-      <div class="btn-row">
-        <button class="btn-guardar" onclick="guardarSeccion('horarios')">💾 Guardar horarios</button>
-      </div>
+      <button class="btn-guardar" onclick="guardar('horarios')">💾 Guardar horarios</button>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- 4. PAGOS                              -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- PAGOS -->
     <div class="seccion">
-      <div class="seccion-header">
-        <span class="seccion-icono">💳</span>
+      <div class="sec-header"><span class="sec-icono">💳</span><div><div class="sec-titulo">Cobros y pagos</div><div class="sec-sub">CBU, alias y QR para recibir pagos</div></div></div>
+      <div class="grid2">
+        <div class="campo"><label>CBU</label><input type="text" id="pCbu" maxlength="22" placeholder="0000000000000000000000"><div class="hint">22 dígitos sin espacios</div></div>
+        <div class="campo"><label>Alias</label><input type="text" id="pAlias" placeholder="NOMBRE.APELLIDO.MP"></div>
+      </div>
+      <div class="campo" style="max-width:200px;margin-bottom:1rem;">
+        <label>Precio consulta ($)</label>
+        <input type="number" id="pPrecio" placeholder="0">
+        <div class="hint">0 = no mostrar precio</div>
+      </div>
+      <hr>
+      <div style="display:flex;align-items:flex-start;gap:1.5rem;flex-wrap:wrap;">
         <div>
-          <div class="seccion-titulo">Cobros y pagos</div>
-          <div class="seccion-sub">CBU, alias y QR para recibir pagos de los pacientes</div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="campo-grupo">
-          <label class="campo-label">CBU</label>
-          <input type="text" class="campo-input" id="cfgCbu" placeholder="0000000000000000000000" maxlength="22" />
-          <div class="campo-hint">22 dígitos sin espacios</div>
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Alias</label>
-          <input type="text" class="campo-input" id="cfgAlias" placeholder="NOMBRE.APELLIDO.MP" />
-          <div class="campo-hint">Alias de tu cuenta de MercadoPago o banco</div>
-        </div>
-      </div>
-
-      <div class="campo-grupo">
-        <label class="campo-label">Precio de la consulta ($)</label>
-        <input type="number" class="campo-input" id="cfgPrecioConsulta" placeholder="0" style="max-width:180px;" />
-        <div class="campo-hint">Se muestra al paciente al sacar turno. Dejalo en 0 para no mostrarlo.</div>
-      </div>
-
-      <hr class="separador" />
-
-      <div class="qr-area">
-        <div>
-          <div class="foto-label-title">QR de pago</div>
-          <div class="qr-preview" id="qrPreview" onclick="document.getElementById('inputQR').click()">
-            <span style="font-size:28px;">📱</span>
-            <span>Subir QR</span>
+          <div class="foto-label" style="text-align:center;margin-bottom:8px;">QR de pago</div>
+          <div id="qrPreview" style="width:120px;height:120px;border:2px dashed #e2e8f0;border-radius:12px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;cursor:pointer;background:#f7fafc;" onclick="document.getElementById('inputQR').click()">
+            <span style="font-size:28px;">📱</span><span style="font-size:11px;color:#a0aec0;">Subir QR</span>
           </div>
-          <input type="file" id="inputQR" accept="image/*" onchange="cargarQR(this)">
-          <button class="btn-upload" style="margin-top:8px;" onclick="document.getElementById('inputQR').click()">Subir imagen QR</button>
-          <button class="btn-upload" style="margin-top:6px;color:#e53e3e;display:none" id="btnQuitarQR" onclick="quitarQR()">Quitar QR</button>
+          <input type="file" id="inputQR" accept="image/*" onchange="handleQR(this)">
+          <button class="btn-upload" onclick="document.getElementById('inputQR').click()">Subir QR</button>
+          <button class="btn-upload" id="btnQQR" style="color:#e53e3e;display:none" onclick="qQR()">Quitar</button>
         </div>
-        <div style="flex:1;min-width:220px;">
-          <div style="background:#f0faf4;border:1px solid #c6f6d5;border-radius:10px;padding:14px;font-size:13px;color:#276749;line-height:1.7;">
-            <strong>💡 ¿Cómo funciona el QR?</strong><br>
-            Subí la imagen del QR de MercadoPago (o cualquier billetera). Cuando el paciente saca turno, puede escanearlo para pagar antes de la consulta.<br><br>
-            Para obtenerlo: abrí <strong>Mercado Pago → Cobrar → Mi código QR</strong> y guardá la imagen.
-          </div>
+        <div style="flex:1;min-width:200px;background:#f0faf4;border:1px solid #c6f6d5;border-radius:10px;padding:14px;font-size:13px;color:#276749;line-height:1.7;">
+          <strong>💡 QR de MercadoPago</strong><br>
+          Abrí Mercado Pago → Cobrar → Mi código QR → guardá la imagen y subila acá. Los pacientes podrán escanearlo al sacar turno.
         </div>
       </div>
-
-      <div class="btn-row">
-        <button class="btn-guardar" onclick="guardarSeccion('pagos')">💾 Guardar datos de cobro</button>
-      </div>
+      <button class="btn-guardar" onclick="guardar('pagos')">💾 Guardar pagos</button>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- 5. MENSAJES AUTOMÁTICOS               -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- MENSAJES -->
     <div class="seccion">
-      <div class="seccion-header">
-        <span class="seccion-icono">💬</span>
-        <div>
-          <div class="seccion-titulo">Mensajes automáticos</div>
-          <div class="seccion-sub">WhatsApp que se envían al paciente en cada etapa</div>
-        </div>
+      <div class="sec-header"><span class="sec-icono">💬</span><div><div class="sec-titulo">Mensajes automáticos</div><div class="sec-sub">WhatsApp que se envían al paciente en cada etapa</div></div></div>
+      <p style="font-size:12px;color:#718096;margin-bottom:12px;">Variables disponibles: <code>{nombre}</code> <code>{fecha}</code> <code>{hora}</code> <code>{dra}</code> <code>{direccion}</code></p>
+      <div class="campo" style="margin-bottom:1rem;"><label>✅ Turno confirmado</label><textarea id="mConfirmado" rows="3"></textarea></div>
+      <div class="campo" style="margin-bottom:1rem;"><label>⏰ Recordatorio</label><textarea id="mRecordatorio" rows="3"></textarea></div>
+      <div class="campo" style="margin-bottom:1rem;"><label>📹 Teleconsulta</label><textarea id="mTeleconsulta" rows="3"></textarea></div>
+      <div class="campo" style="margin-bottom:1rem;"><label>❌ Turno cancelado</label><textarea id="mCancelado" rows="3"></textarea></div>
+      <div class="campo" style="max-width:300px;"><label>Días habilitados para chat post-consulta</label>
+        <div style="display:flex;align-items:center;gap:8px;"><input type="number" id="mDiasChat" min="0" max="30" style="max-width:70px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;"><span style="font-size:13px;color:#718096;">días</span></div>
       </div>
-
-      <div class="variables-hint">
-        Podés usar estas variables en los mensajes — hacé clic para insertar:
-        <br>
-        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{nombre}')"><b>{nombre}</b> nombre del paciente</span>
-        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{fecha}')"><b>{fecha}</b> fecha del turno</span>
-        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{hora}')"><b>{hora}</b> hora del turno</span>
-        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{dra}')"><b>{dra}</b> nombre de la doctora</span>
-        <span class="msg-chip" onclick="insertarVariable('cfgMsgConfirmado', '{direccion}')"><b>{direccion}</b> dirección</span>
-      </div>
-
-      <div class="campo-grupo">
-        <label class="campo-label">✅ Turno confirmado</label>
-        <textarea class="campo-input" id="cfgMsgConfirmado" rows="4" placeholder="Hola {nombre}! Tu turno con la {dra} está confirmado para el {fecha} a las {hora}. Consultorio: {direccion}. ¡Nos vemos!"></textarea>
-        <div class="campo-hint">Se envía cuando el paciente saca y confirma el turno</div>
-      </div>
-
-      <div class="campo-grupo">
-        <label class="campo-label">⏰ Recordatorio (día anterior)</label>
-        <textarea class="campo-input" id="cfgMsgRecordatorio" rows="4" placeholder="Hola {nombre}! Te recordamos que mañana tenés turno con la {dra} a las {hora}. Consultorio: {direccion}. Si no podés asistir, avisanos con anticipación."></textarea>
-        <div class="campo-hint">Se puede enviar manualmente desde el panel de turnos</div>
-      </div>
-
-      <div class="campo-grupo">
-        <label class="campo-label">📹 Teleconsulta (inicio)</label>
-        <textarea class="campo-input" id="cfgMsgTeleconsulta" rows="3" placeholder="Hola! Le escribo de parte de la {dra}. En unos minutos iniciamos la teleconsulta por videollamada de WhatsApp."></textarea>
-        <div class="campo-hint">Se envía al iniciar una teleconsulta por WhatsApp</div>
-      </div>
-
-      <div class="campo-grupo">
-        <label class="campo-label">❌ Turno cancelado</label>
-        <textarea class="campo-input" id="cfgMsgCancelado" rows="3" placeholder="Hola {nombre}, te informamos que tu turno del {fecha} a las {hora} fue cancelado. Podés sacar un nuevo turno desde la app."></textarea>
-      </div>
-
-      <div class="campo-grupo">
-        <label class="campo-label">💬 Chat de seguimiento — días habilitados</label>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <input type="number" class="campo-input" id="cfgDiasChat" min="0" max="30" style="max-width:80px;" placeholder="10" />
-          <span style="font-size:13px;color:#718096;">días después de la consulta</span>
-        </div>
-        <div class="campo-hint">Tiempo durante el cual el paciente puede enviar mensajes post-consulta. 0 = deshabilitado.</div>
-      </div>
-
-      <div class="btn-row">
-        <button class="btn-guardar" onclick="guardarSeccion('mensajes')">💾 Guardar mensajes</button>
-      </div>
+      <button class="btn-guardar" onclick="guardar('mensajes')">💾 Guardar mensajes</button>
     </div>
 
-
-    <!-- ══════════════════════════════════════ -->
-    <!-- 6. FIRMA DIGITAL                       -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- FIRMA -->
     <div class="seccion">
-      <div class="seccion-header">
-        <span class="seccion-icono">✍️</span>
+      <div class="sec-header"><span class="sec-icono">✍️</span><div><div class="sec-titulo">Firma digital</div><div class="sec-sub">Se usa en recetas y documentos clínicos</div></div></div>
+      <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;">
         <div>
-          <div class="seccion-titulo">Firma digital</div>
-          <div class="seccion-sub">Se usa en recetas, certificados y documentos clínicos</div>
-        </div>
-      </div>
-
-      <div style="display:flex;align-items:flex-start;gap:2rem;flex-wrap:wrap;">
-        <div style="text-align:center;">
-          <div class="foto-label-title">Firma actual</div>
-          <div id="firmaPreview" style="width:280px;height:120px;border:2px dashed #e2e8f0;border-radius:12px;background:#fafafa;display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative;" onclick="document.getElementById('inputFirmaImg').click()">
-            <span id="firmaPlaceholder" style="font-size:13px;color:#a0aec0;text-align:center;">📝 Sin firma cargada<br><span style="font-size:11px;">Subí una imagen o dibujá abajo</span></span>
+          <div class="foto-label" style="margin-bottom:8px;">Firma actual</div>
+          <div class="firma-preview" id="firmaPreview" onclick="document.getElementById('inputFirma').click()">
+            <span style="font-size:13px;color:#a0aec0;text-align:center;">📝 Sin firma<br><span style="font-size:11px;">Subí imagen o dibujá</span></span>
           </div>
-          <input type="file" id="inputFirmaImg" accept="image/*" onchange="cargarFirmaImg(this)">
-          <div style="display:flex;gap:8px;margin-top:8px;justify-content:center;">
-            <button class="btn-upload" onclick="document.getElementById('inputFirmaImg').click()">📁 Subir imagen</button>
-            <button class="btn-upload" onclick="mostrarCanvas()" id="btnDibujar">✍️ Dibujar firma</button>
-            <button class="btn-upload" style="color:#e53e3e;display:none" id="btnQuitarFirma" onclick="quitarFirma()">Quitar</button>
+          <input type="file" id="inputFirma" accept="image/*" onchange="handleFirma(this)">
+          <div style="margin-top:8px;">
+            <button class="btn-upload" onclick="document.getElementById('inputFirma').click()">📁 Subir imagen</button>
+            <button class="btn-upload" onclick="toggleCanvas()">✍️ Dibujar</button>
+            <button class="btn-upload" id="btnQFirma" style="color:#e53e3e;display:none" onclick="qFirma()">Quitar</button>
           </div>
         </div>
-
-        <div style="flex:1;min-width:220px;">
-          <!-- Canvas para dibujar -->
-          <div id="canvasFirmaWrap" style="display:none;">
-            <div class="foto-label-title">Dibujá tu firma</div>
-            <canvas id="canvasFirma" width="400" height="150" style="border:2px solid #e2e8f0;border-radius:10px;background:#fff;cursor:crosshair;touch-action:none;max-width:100%;"></canvas>
-            <div style="display:flex;gap:8px;margin-top:8px;">
+        <div style="flex:1;">
+          <div id="canvasWrap" style="display:none;">
+            <div class="foto-label" style="margin-bottom:8px;">Dibujá tu firma</div>
+            <canvas id="canvasFirma" width="380" height="140"></canvas>
+            <div style="margin-top:8px;">
               <button class="btn-upload" onclick="limpiarCanvas()">🗑️ Limpiar</button>
-              <button class="btn-guardar" style="padding:7px 16px;font-size:13px;" onclick="guardarDesdeCanvas()">✅ Usar esta firma</button>
+              <button class="btn-guardar" style="padding:7px 16px;font-size:13px;" onclick="usarCanvas()">✅ Usar esta firma</button>
             </div>
           </div>
-
-          <div style="background:#fef9e7;border:1px solid #f6e05e;border-radius:10px;padding:14px;font-size:13px;color:#744210;line-height:1.7;margin-top:12px;">
-            <strong>💡 Sobre la firma</strong><br>
-            La firma se imprime en recetas y certificados generados desde el sistema.<br><br>
-            Podés subir una imagen de tu firma escaneada o firmar directamente con el mouse o dedo (en tablet/celular).
-          </div>
         </div>
       </div>
-
-      <div class="btn-row">
-        <button class="btn-guardar" onclick="guardarSeccion('firma')">💾 Guardar firma</button>
-      </div>
+      <button class="btn-guardar" onclick="guardar('firma')">💾 Guardar firma</button>
     </div>
 
-    <!-- ══════════════════════════════════════ -->
-    <!-- 7. SEGURIDAD                          -->
-    <!-- ══════════════════════════════════════ -->
+    <!-- SEGURIDAD -->
     <div class="seccion">
-      <div class="seccion-header">
-        <span class="seccion-icono">🔐</span>
-        <div>
-          <div class="seccion-titulo">Seguridad</div>
-          <div class="seccion-sub">Cambiar usuario y contraseña del panel médico</div>
-        </div>
-      </div>
-
-      <div class="grid-2">
-        <div class="campo-grupo">
-          <label class="campo-label">Usuario de acceso</label>
-          <input type="text" class="campo-input" id="cfgUsuario" placeholder="dra.ranalli" autocomplete="off" />
-        </div>
+      <div class="sec-header"><span class="sec-icono">🔐</span><div><div class="sec-titulo">Seguridad</div><div class="sec-sub">Cambiar usuario y contraseña del panel médico</div></div></div>
+      <div class="grid2">
+        <div class="campo"><label>Usuario</label><input type="text" id="sUsuario" placeholder="dra.ranalli" autocomplete="off"></div>
         <div></div>
-        <div class="campo-grupo">
-          <label class="campo-label">Contraseña actual</label>
-          <input type="password" class="campo-input" id="cfgPassActual" placeholder="••••••••" autocomplete="off" />
-        </div>
+        <div class="campo"><label>Contraseña actual</label><input type="password" id="sActual" placeholder="••••••••" autocomplete="off"></div>
         <div></div>
-        <div class="campo-grupo">
-          <label class="campo-label">Nueva contraseña</label>
-          <input type="password" class="campo-input" id="cfgPassNueva" placeholder="Mínimo 6 caracteres" oninput="evaluarPass(this.value)" autocomplete="new-password" />
-          <div class="pass-strength" id="passStrength"></div>
-        </div>
-        <div class="campo-grupo">
-          <label class="campo-label">Repetir nueva contraseña</label>
-          <input type="password" class="campo-input" id="cfgPassRepetir" placeholder="••••••••" autocomplete="new-password" />
-        </div>
+        <div class="campo"><label>Nueva contraseña</label><input type="password" id="sNueva" placeholder="Mínimo 6 caracteres" oninput="evalPass(this.value)" autocomplete="new-password"><div class="pass-bar" id="passBar"></div></div>
+        <div class="campo"><label>Repetir contraseña</label><input type="password" id="sRepetir" placeholder="••••••••" autocomplete="new-password"></div>
       </div>
-
-      <div class="btn-row">
-        <button class="btn-guardar" onclick="cambiarPassword()">🔐 Cambiar contraseña</button>
-      </div>
+      <button class="btn-guardar" onclick="cambiarPass()">🔐 Cambiar contraseña</button>
     </div>
 
   </main>
@@ -547,603 +290,400 @@
 
 <div class="toast" id="toast"></div>
 
-<!-- ══════════════════════════════════════════ -->
-<!-- FIREBASE + LÓGICA                         -->
-<!-- ══════════════════════════════════════════ -->
 <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  const app = initializeApp(CONFIG.firebase);
-  const db  = getFirestore(app);
+const app = initializeApp(CONFIG.firebase);
+const db  = getFirestore(app);
 
-  // ── Utilidades ────────────────────────────────────────────────
-  function toast(msg, tipo = "ok") {
-    const t = document.getElementById("toast");
-    t.textContent = (tipo === "ok" ? "✅ " : "❌ ") + msg;
-    t.className = "toast show " + tipo;
-    setTimeout(() => t.className = "toast", 3000);
+// ── TOAST ──────────────────────────────────────────
+function toast(msg, err) {
+  const t = document.getElementById("toast");
+  t.textContent = (err ? "❌ " : "✅ ") + msg;
+  t.className = "toast show" + (err ? " error" : "");
+  setTimeout(() => t.className = "toast", 3000);
+}
+
+// ── IMÁGENES ───────────────────────────────────────
+let fotoB64 = null, logoB64 = null, qrB64 = null, firmaB64 = null;
+
+window.handleFoto = (inp) => { readImg(inp, b => { fotoB64 = b; setPreview("fotoPreview", b, true); show("btnQFoto"); }); };
+window.qFoto      = ()    => { fotoB64 = ""; setInitials("fotoPreview", "fotoIniciales", CONFIG.iniciales || "FR"); hide("btnQFoto"); };
+window.handleLogo = (inp) => { readImg(inp, b => { logoB64 = b; setPreview("logoPreview", b, false); show("btnQLogo"); }); };
+window.qLogo      = ()    => { logoB64 = ""; setInitials("logoPreview", "logoLetra", CONFIG.logoIcono || "P"); hide("btnQLogo"); };
+window.handleQR   = (inp) => { readImg(inp, b => { qrB64 = b; const p = document.getElementById("qrPreview"); p.innerHTML = `<img src="${b}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">`;  show("btnQQR"); }); };
+window.qQR        = ()    => { qrB64 = ""; document.getElementById("qrPreview").innerHTML = '<span style="font-size:28px;">📱</span><span style="font-size:11px;color:#a0aec0;">Subir QR</span>'; hide("btnQQR"); };
+window.handleFirma= (inp) => { readImg(inp, b => { firmaB64 = b; document.getElementById("firmaPreview").innerHTML = `<img src="${b}">`; show("btnQFirma"); }); };
+window.qFirma     = ()    => { firmaB64 = ""; document.getElementById("firmaPreview").innerHTML = '<span style="font-size:13px;color:#a0aec0;text-align:center;">📝 Sin firma</span>'; hide("btnQFirma"); };
+
+function readImg(inp, cb) {
+  const file = inp.files[0]; if (!file) return;
+  const r = new FileReader();
+  r.onload = e => cb(e.target.result);
+  r.readAsDataURL(file);
+}
+function setPreview(id, b64, circle) {
+  const el = document.getElementById(id);
+  el.innerHTML = `<img src="${b64}" style="width:100%;height:100%;object-fit:${circle?'cover':'contain'};${circle?'':'padding:8px;'}">`;
+}
+function setInitials(previewId, spanId, text) {
+  const el = document.getElementById(previewId);
+  el.innerHTML = `<span id="${spanId}">${text}</span>`;
+}
+function show(id) { const el = document.getElementById(id); if(el) el.style.display = "inline-block"; }
+function hide(id) { const el = document.getElementById(id); if(el) el.style.display = "none"; }
+
+// ── COLORES ────────────────────────────────────────
+document.getElementById("color1").oninput = function() { document.getElementById("color1hex").value = this.value; };
+document.getElementById("color1hex").oninput = function() { if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById("color1").value = this.value; };
+document.getElementById("color2").oninput = function() { document.getElementById("color2hex").value = this.value; };
+document.getElementById("color2hex").oninput = function() { if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById("color2").value = this.value; };
+
+// ── HORARIOS ───────────────────────────────────────
+const DIAS = [
+  { n: 1, label: "Lunes" },
+  { n: 2, label: "Martes" },
+  { n: 3, label: "Miércoles" },
+  { n: 4, label: "Jueves" },
+  { n: 5, label: "Viernes" },
+  { n: 6, label: "Sábado" },
+  { n: 0, label: "Domingo" },
+];
+
+function slots() {
+  const s = [];
+  for (let m = 7*60; m < 21*60; m += 30) {
+    const h = String(Math.floor(m/60)).padStart(2,'0');
+    const mm = String(m%60).padStart(2,'0');
+    s.push(h + ":" + mm);
   }
+  return s;
+}
 
-  // ── HORARIOS: sistema de slots ───────────────────────────────
-  const DIAS_INFO = [
-    { num: 1, label: "Lunes" },
-    { num: 2, label: "Martes" },
-    { num: 3, label: "Miércoles" },
-    { num: 4, label: "Jueves" },
-    { num: 5, label: "Viernes" },
-    { num: 6, label: "Sábado" },
-    { num: 0, label: "Domingo" },
-  ];
+const ALL_SLOTS = slots();
 
-  function pad(n) { return String(n).padStart(2, "0"); }
+const estado = {};
+DIAS.forEach(d => {
+  estado[d.n] = {
+    activo: d.n >= 1 && d.n <= 5,
+    presencial:   { activo: true, slots: [...ALL_SLOTS] },
+    telemedicina: { activo: true, slots: [...ALL_SLOTS] }
+  };
+});
 
-  function todosSlots() {
-    const s = [];
-    for (let m = 7*60; m < 21*60; m += 30)
-      s.push(pad(Math.floor(m/60)) + ":" + pad(m%60));
-    return s;
-  }
+function resumen(n) {
+  const d = estado[n];
+  const p = [];
+  if (d.presencial.activo   && d.presencial.slots.length)   p.push("🏥 " + d.presencial.slots.length + " turnos");
+  if (d.telemedicina.activo && d.telemedicina.slots.length) p.push("💻 " + d.telemedicina.slots.length + " turnos");
+  return p.length ? p.join(" · ") : "Sin turnos";
+}
 
-  const estadoDias = {};
-  DIAS_INFO.forEach(d => {
-    estadoDias[d.num] = {
-      activo: d.num >= 1 && d.num <= 5,
-      presencial:   { activo: true, slots: todosSlots() },
-      telemedicina: { activo: true, slots: todosSlots() }
+function buildSwitch(on, onclick) {
+  const sw = document.createElement("div");
+  sw.className = "sw";
+  sw.style.background = on ? "#667eea" : "#e2e8f0";
+  const k = document.createElement("div");
+  k.className = "sw-knob";
+  k.style.left = on ? "20px" : "2px";
+  sw.appendChild(k);
+  sw.onclick = onclick;
+  return sw;
+}
+
+function buildSlotGrid(n, tipo) {
+  const grid = document.createElement("div");
+  grid.className = "slot-grid";
+  const activos = new Set(estado[n][tipo].slots);
+  ALL_SLOTS.forEach(s => {
+    const btn = document.createElement("button");
+    btn.className = "slot" + (activos.has(s) ? " on" : "");
+    btn.textContent = s;
+    btn.onclick = () => {
+      const arr = estado[n][tipo].slots;
+      const i = arr.indexOf(s);
+      if (i >= 0) { arr.splice(i,1); btn.classList.remove("on"); }
+      else        { arr.push(s); arr.sort(); btn.classList.add("on"); }
     };
+    grid.appendChild(btn);
   });
+  return grid;
+}
 
-  function renderDias(data) {
-    // Cargar datos si vienen de Firestore
-    if (data && data.dias) {
-      DIAS_INFO.forEach(di => {
-        const src = data.dias[String(di.num)];
+function buildTipo(n, tipo, titulo, sub) {
+  const cfg = estado[n][tipo];
+  const bloque = document.createElement("div");
+  bloque.className = "tipo-bloque" + (cfg.activo ? " on" : "");
+  bloque.style.marginTop = "10px";
+
+  const hdr = document.createElement("div");
+  hdr.className = "tipo-header";
+  const sw = buildSwitch(cfg.activo, () => {
+    estado[n][tipo].activo = !estado[n][tipo].activo;
+    renderDias();
+  });
+  const info = document.createElement("div");
+  info.innerHTML = `<div class="tipo-nombre">${titulo}</div><div class="tipo-sub">${sub}</div>`;
+  hdr.appendChild(sw); hdr.appendChild(info);
+  bloque.appendChild(hdr);
+  if (cfg.activo) bloque.appendChild(buildSlotGrid(n, tipo));
+  return bloque;
+}
+
+function buildDiaCard(d) {
+  const st = estado[d.n];
+  const card = document.createElement("div");
+  card.className = "dia-card" + (st.activo ? " on" : "");
+
+  const hdr = document.createElement("div");
+  hdr.className = "dia-header";
+  const sw = buildSwitch(st.activo, () => {
+    estado[d.n].activo = !estado[d.n].activo;
+    renderDias();
+  });
+  const nombre = document.createElement("span");
+  nombre.className = "dia-nombre";
+  nombre.textContent = d.label;
+  const res = document.createElement("span");
+  res.className = "dia-resumen";
+  res.textContent = st.activo ? resumen(d.n) : "Sin turnos";
+  hdr.appendChild(sw); hdr.appendChild(nombre); hdr.appendChild(res);
+  card.appendChild(hdr);
+
+  if (st.activo) {
+    const body = document.createElement("div");
+    body.className = "dia-body";
+    body.appendChild(buildTipo(d.n, "presencial",   "🏥 Presencial",   "Consulta en consultorio"));
+    body.appendChild(buildTipo(d.n, "telemedicina", "💻 Teleconsulta", "Videollamada por WhatsApp"));
+    card.appendChild(body);
+  }
+  return card;
+}
+
+function renderDias() {
+  const cont = document.getElementById("diasContainer");
+  if (!cont) return;
+  cont.innerHTML = "";
+  DIAS.forEach(d => cont.appendChild(buildDiaCard(d)));
+}
+
+// ── CANVAS FIRMA ───────────────────────────────────
+let canvasInit = false;
+window.toggleCanvas = () => {
+  const w = document.getElementById("canvasWrap");
+  w.style.display = w.style.display === "none" ? "block" : "none";
+  if (!canvasInit) { initCanvas(); canvasInit = true; }
+};
+window.limpiarCanvas = () => {
+  const c = document.getElementById("canvasFirma");
+  c.getContext("2d").clearRect(0,0,c.width,c.height);
+};
+window.usarCanvas = () => {
+  const c = document.getElementById("canvasFirma");
+  firmaB64 = c.toDataURL();
+  document.getElementById("firmaPreview").innerHTML = `<img src="${firmaB64}">`;
+  show("btnQFirma");
+  document.getElementById("canvasWrap").style.display = "none";
+};
+function initCanvas() {
+  const c = document.getElementById("canvasFirma");
+  const ctx = c.getContext("2d");
+  let draw = false;
+  ctx.strokeStyle = "#1a202c"; ctx.lineWidth = 2; ctx.lineCap = "round";
+  const pos = e => {
+    const r = c.getBoundingClientRect();
+    const sx = c.width/r.width, sy = c.height/r.height;
+    const src = e.touches ? e.touches[0] : e;
+    return { x: (src.clientX-r.left)*sx, y: (src.clientY-r.top)*sy };
+  };
+  c.onmousedown = c.ontouchstart = e => { e.preventDefault(); draw=true; const p=pos(e); ctx.beginPath(); ctx.moveTo(p.x,p.y); };
+  c.onmousemove = c.ontouchmove  = e => { e.preventDefault(); if(!draw) return; const p=pos(e); ctx.lineTo(p.x,p.y); ctx.stroke(); };
+  c.onmouseup   = c.ontouchend   = () => draw=false;
+  c.onmouseleave = () => draw=false;
+}
+
+// ── FORTALEZA CONTRASEÑA ───────────────────────────
+window.evalPass = v => {
+  const b = document.getElementById("passBar");
+  if (!v) { b.className="pass-bar"; return; }
+  if (v.length < 6) b.className="pass-bar d";
+  else if (v.length < 10 || !/[0-9]/.test(v)) b.className="pass-bar m";
+  else b.className="pass-bar f";
+};
+
+// ── CARGAR DATOS ───────────────────────────────────
+async function cargar() {
+  try {
+    const [sP, sH, sPag, sM, sF, sA] = await Promise.all([
+      getDoc(doc(db,"configuracion","perfil")),
+      getDoc(doc(db,"configuracion","horarios")),
+      getDoc(doc(db,"configuracion","pagos")),
+      getDoc(doc(db,"configuracion","mensajes")),
+      getDoc(doc(db,"configuracion","firma")),
+      getDoc(doc(db,"configuracion","acceso")),
+    ]);
+
+    // Perfil
+    const p = sP.exists() ? sP.data() : {};
+    const get = (id, fb, def) => { const el = document.getElementById(id); if(el) el.value = p[fb] || CONFIG[def] || ""; };
+    get("dNombre","nombre","nombre");
+    get("dNombreCorto","nombreCorto","nombreCorto");
+    get("dTitulo","titulo","titulo");
+    get("dEspecialidad","especialidad","especialidad");
+    get("dMatricula","matricula","matricula");
+    get("dIniciales","iniciales","iniciales");
+    get("dApp","nombreApp","nombreApp");
+    get("dDireccion","direccion","direccion");
+    get("dTelefono","telefono","telefono");
+    get("dWhatsapp","whatsapp","whatsapp");
+    get("dEmail","email","email");
+
+    // Foto/logo
+    if (p.fotoBase64) { fotoB64=p.fotoBase64; setPreview("fotoPreview",fotoB64,true); show("btnQFoto"); }
+    else { document.getElementById("fotoPreview").innerHTML = `<span id="fotoIniciales">${p.iniciales||CONFIG.iniciales||"FR"}</span>`; }
+    if (p.logoBase64) { logoB64=p.logoBase64; setPreview("logoPreview",logoB64,false); show("btnQLogo"); }
+    else { document.getElementById("logoPreview").innerHTML = `<span id="logoLetra">${p.logoIcono||CONFIG.logoIcono||"P"}</span>`; }
+
+    // Colores
+    const c1 = p.colorPrimario   || CONFIG.colorPrimario   || "#667eea";
+    const c2 = p.colorSecundario || CONFIG.colorSecundario || "#764ba2";
+    document.getElementById("color1").value    = c1;
+    document.getElementById("color1hex").value = c1;
+    document.getElementById("color2").value    = c2;
+    document.getElementById("color2hex").value = c2;
+
+    // Horarios
+    if (sH.exists() && sH.data().dias) {
+      const dias = sH.data().dias;
+      DIAS.forEach(d => {
+        const src = dias[String(d.n)];
         if (!src) return;
-        estadoDias[di.num].activo = src.activo === true;
+        estado[d.n].activo = src.activo === true;
         ["presencial","telemedicina"].forEach(t => {
           if (!src[t]) return;
-          estadoDias[di.num][t].activo = src[t].activo !== false;
-          if (src[t].slots) estadoDias[di.num][t].slots = [...src[t].slots];
+          estado[d.n][t].activo = src[t].activo !== false;
+          if (src[t].slots && src[t].slots.length) estado[d.n][t].slots = [...src[t].slots];
         });
       });
     }
-    buildDiasUI();
+    renderDias();
+
+    // Pagos
+    const pg = sPag.exists() ? sPag.data() : {};
+    const ge = (id, v) => { const el=document.getElementById(id); if(el) el.value=v||""; };
+    ge("pCbu", pg.cbu||CONFIG.cbu); ge("pAlias", pg.alias||CONFIG.alias); ge("pPrecio", pg.precioConsulta||"");
+    if (pg.qrBase64) { qrB64=pg.qrBase64; document.getElementById("qrPreview").innerHTML=`<img src="${qrB64}" style="width:100%;height:100%;object-fit:contain;border-radius:10px;">`; show("btnQQR"); }
+
+    // Mensajes
+    const ms = sM.exists() ? sM.data() : {};
+    document.getElementById("mConfirmado").value   = ms.msgConfirmado   || "Hola {nombre}! Tu turno con {dra} está confirmado para el {fecha} a las {hora}. Consultorio: {direccion}. ¡Nos vemos! 🩺";
+    document.getElementById("mRecordatorio").value = ms.msgRecordatorio || "Hola {nombre}! Te recordamos que mañana tenés turno con {dra} a las {hora}. Consultorio: {direccion}.";
+    document.getElementById("mTeleconsulta").value = ms.msgTeleconsulta || "Hola! Le escribo de parte de {dra}. En unos minutos iniciamos la teleconsulta por WhatsApp.";
+    document.getElementById("mCancelado").value    = ms.msgCancelado    || "Hola {nombre}, tu turno del {fecha} a las {hora} fue cancelado. Podés sacar uno nuevo desde la app.";
+    document.getElementById("mDiasChat").value     = ms.diasChat != null ? ms.diasChat : 10;
+
+    // Firma
+    const ff = sF.exists() ? sF.data() : {};
+    if (ff.firmaBase64) { firmaB64=ff.firmaBase64; document.getElementById("firmaPreview").innerHTML=`<img src="${firmaB64}">`; show("btnQFirma"); }
+
+    // Acceso
+    const ac = sA.exists() ? sA.data() : {};
+    document.getElementById("sUsuario").value = ac.usuario || "dra.ranalli";
+
+  } catch(e) {
+    console.error(e);
+    renderDias();
+    toast("Error al cargar configuración", true);
   }
+}
 
-  function buildDiasUI() {
-    const cont = document.getElementById("diasContainer");
-    cont.innerHTML = "";
-    DIAS_INFO.forEach(d => cont.appendChild(buildDiaCard(d.num, d.label)));
-  }
+// ── GUARDAR ────────────────────────────────────────
+window.guardar = async (sec) => {
+  const btn = event.target;
+  const orig = btn.textContent;
+  btn.textContent = "⏳ Guardando...";
+  btn.disabled = true;
+  try {
+    if (sec === "perfil") {
+      const d = { colorPrimario: document.getElementById("color1hex").value||document.getElementById("color1").value, colorSecundario: document.getElementById("color2hex").value||document.getElementById("color2").value };
+      if (fotoB64 !== null) d.fotoBase64 = fotoB64;
+      if (logoB64 !== null) d.logoBase64 = logoB64;
+      await setDoc(doc(db,"configuracion","perfil"), d, {merge:true});
 
-  function buildDiaCard(num, label) {
-    const d = estadoDias[num];
-    const wrap = document.createElement("div");
-    wrap.id = "diaCard_" + num;
-    wrap.style.cssText = "border:2px solid " + (d.activo ? "#667eea" : "#e2e8f0") + ";border-radius:12px;margin-bottom:10px;overflow:hidden;transition:border-color .2s;";
+    } else if (sec === "datos") {
+      const gv = id => document.getElementById(id).value.trim();
+      await setDoc(doc(db,"configuracion","perfil"), {
+        nombre: gv("dNombre"), nombreCorto: gv("dNombreCorto"), titulo: gv("dTitulo"),
+        especialidad: gv("dEspecialidad"), matricula: gv("dMatricula"),
+        iniciales: gv("dIniciales").toUpperCase(), nombreApp: gv("dApp"),
+        direccion: gv("dDireccion"), telefono: gv("dTelefono"),
+        whatsapp: gv("dWhatsapp"), email: gv("dEmail"),
+      }, {merge:true});
 
-    // Header
-    const header = document.createElement("div");
-    header.style.cssText = "display:flex;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;";
-
-    const toggle = document.createElement("div");
-    toggle.style.cssText = "position:relative;width:40px;height:22px;background:" + (d.activo ? "#667eea" : "#e2e8f0") + ";border-radius:11px;cursor:pointer;flex-shrink:0;transition:background .2s;";
-    const knob = document.createElement("div");
-    knob.style.cssText = "position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:2px;left:" + (d.activo ? "20px" : "2px") + ";box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s;";
-    toggle.appendChild(knob);
-    toggle.onclick = (e) => { e.stopPropagation(); estadoDias[num].activo = !estadoDias[num].activo; buildDiasUI(); };
-
-    const nombre = document.createElement("span");
-    nombre.style.cssText = "font-size:15px;font-weight:600;color:#2d3748;min-width:90px;";
-    nombre.textContent = label;
-
-    const resumen = document.createElement("span");
-    resumen.style.cssText = "font-size:13px;color:" + (d.activo ? "#667eea" : "#a0aec0") + ";flex:1;";
-    resumen.textContent = d.activo ? getResumen(num) : "Sin turnos";
-
-    header.appendChild(toggle);
-    header.appendChild(nombre);
-    header.appendChild(resumen);
-    wrap.appendChild(header);
-
-    // Detalle (solo si activo)
-    if (d.activo) {
-      const detalle = document.createElement("div");
-      detalle.style.cssText = "padding:0 16px 16px;";
-      detalle.appendChild(buildTipoBloque(num, "presencial", "🏥 Presencial", "Consulta en consultorio"));
-      detalle.appendChild(buildTipoBloque(num, "telemedicina", "💻 Teleconsulta", "Videollamada por WhatsApp"));
-      wrap.appendChild(detalle);
-    }
-
-    return wrap;
-  }
-
-  function buildTipoBloque(num, tipo, titulo, subtitulo) {
-    const cfg = estadoDias[num][tipo];
-    const bloque = document.createElement("div");
-    bloque.style.cssText = "border:1px solid " + (cfg.activo ? "#c3d0f7" : "#e2e8f0") + ";border-radius:10px;padding:12px 14px;margin-top:10px;background:" + (cfg.activo ? "#f8f9ff" : "#fafafa") + ";";
-
-    const tipoHeader = document.createElement("div");
-    tipoHeader.style.cssText = "display:flex;align-items:center;gap:10px;margin-bottom:4px;";
-
-    const tog = document.createElement("div");
-    tog.style.cssText = "position:relative;width:40px;height:22px;background:" + (cfg.activo ? "#667eea" : "#e2e8f0") + ";border-radius:11px;cursor:pointer;flex-shrink:0;";
-    const k = document.createElement("div");
-    k.style.cssText = "position:absolute;width:18px;height:18px;background:#fff;border-radius:50%;top:2px;left:" + (cfg.activo ? "20px" : "2px") + ";box-shadow:0 1px 3px rgba(0,0,0,.2);";
-    tog.appendChild(k);
-    tog.onclick = () => { estadoDias[num][tipo].activo = !estadoDias[num][tipo].activo; buildDiasUI(); };
-
-    const info = document.createElement("div");
-    const t1 = document.createElement("div");
-    t1.style.cssText = "font-size:14px;font-weight:600;color:#2d3748;";
-    t1.textContent = titulo;
-    const t2 = document.createElement("div");
-    t2.style.cssText = "font-size:12px;color:#a0aec0;";
-    t2.textContent = subtitulo;
-    info.appendChild(t1); info.appendChild(t2);
-
-    tipoHeader.appendChild(tog);
-    tipoHeader.appendChild(info);
-    bloque.appendChild(tipoHeader);
-
-    if (cfg.activo) {
-      const grid = document.createElement("div");
-      grid.style.cssText = "display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-top:10px;";
-      const activos = new Set(cfg.slots);
-      todosSlots().forEach(slot => {
-        const btn = document.createElement("button");
-        const on = activos.has(slot);
-        btn.textContent = slot;
-        btn.style.cssText = "padding:7px 4px;border-radius:8px;font-size:11px;cursor:pointer;text-align:center;border:1px solid " + (on ? "#667eea" : "#e2e8f0") + ";background:" + (on ? "#ebf4ff" : "#f7fafc") + ";color:" + (on ? "#667eea" : "#a0aec0") + ";font-weight:" + (on ? "600" : "400") + ";font-family:inherit;";
-        btn.onclick = () => {
-          const slots = estadoDias[num][tipo].slots;
-          const idx = slots.indexOf(slot);
-          if (idx >= 0) {
-            slots.splice(idx, 1);
-            btn.style.borderColor = "#e2e8f0"; btn.style.background = "#f7fafc";
-            btn.style.color = "#a0aec0"; btn.style.fontWeight = "400";
-          } else {
-            slots.push(slot); slots.sort();
-            btn.style.borderColor = "#667eea"; btn.style.background = "#ebf4ff";
-            btn.style.color = "#667eea"; btn.style.fontWeight = "600";
-          }
+    } else if (sec === "horarios") {
+      const diasData = {};
+      DIAS.forEach(d => {
+        diasData[String(d.n)] = {
+          activo: estado[d.n].activo,
+          presencial:   { activo: estado[d.n].presencial.activo,   slots: [...estado[d.n].presencial.slots]   },
+          telemedicina: { activo: estado[d.n].telemedicina.activo, slots: [...estado[d.n].telemedicina.slots] },
         };
-        grid.appendChild(btn);
       });
-      bloque.appendChild(grid);
+      await setDoc(doc(db,"configuracion","horarios"), {dias: diasData});
+
+    } else if (sec === "pagos") {
+      const d = { cbu: document.getElementById("pCbu").value.trim(), alias: document.getElementById("pAlias").value.trim(), precioConsulta: Number(document.getElementById("pPrecio").value)||0 };
+      if (qrB64 !== null) d.qrBase64 = qrB64;
+      await setDoc(doc(db,"configuracion","pagos"), d, {merge:true});
+
+    } else if (sec === "mensajes") {
+      await setDoc(doc(db,"configuracion","mensajes"), {
+        msgConfirmado:   document.getElementById("mConfirmado").value.trim(),
+        msgRecordatorio: document.getElementById("mRecordatorio").value.trim(),
+        msgTeleconsulta: document.getElementById("mTeleconsulta").value.trim(),
+        msgCancelado:    document.getElementById("mCancelado").value.trim(),
+        diasChat:        Number(document.getElementById("mDiasChat").value)||10,
+      }, {merge:true});
+
+    } else if (sec === "firma") {
+      if (firmaB64 !== null) await setDoc(doc(db,"configuracion","firma"), {firmaBase64: firmaB64}, {merge:true});
     }
-
-    return bloque;
+    toast("¡Guardado correctamente!");
+  } catch(e) {
+    console.error(e);
+    toast("Error al guardar", true);
   }
+  btn.textContent = orig;
+  btn.disabled = false;
+};
 
-  function getResumen(num) {
-    const d = estadoDias[num];
-    const p = [];
-    if (d.presencial.activo   && d.presencial.slots.length)   p.push("🏥 " + d.presencial.slots.length + " turnos");
-    if (d.telemedicina.activo && d.telemedicina.slots.length) p.push("💻 " + d.telemedicina.slots.length + " turnos");
-    return p.length ? p.join("  ·  ") : "Sin turnos";
-  }
+// ── CAMBIAR CONTRASEÑA ─────────────────────────────
+window.cambiarPass = async () => {
+  const usuario  = document.getElementById("sUsuario").value.trim();
+  const actual   = document.getElementById("sActual").value;
+  const nueva    = document.getElementById("sNueva").value;
+  const repetir  = document.getElementById("sRepetir").value;
+  if (!usuario)  return toast("Ingresá un usuario", true);
+  if (!actual)   return toast("Ingresá tu contraseña actual", true);
+  if (!nueva)    return toast("Ingresá la nueva contraseña", true);
+  if (nueva.length < 6) return toast("Mínimo 6 caracteres", true);
+  if (nueva !== repetir) return toast("Las contraseñas no coinciden", true);
+  try {
+    const snap = await getDoc(doc(db,"configuracion","acceso"));
+    const passOK = snap.exists() ? snap.data().password : "FlaviaRanalli";
+    if (actual !== passOK) return toast("Contraseña actual incorrecta", true);
+    await setDoc(doc(db,"configuracion","acceso"), { usuario, password: nueva, actualizadoEn: new Date().toISOString() });
+    document.getElementById("sActual").value = "";
+    document.getElementById("sNueva").value  = "";
+    document.getElementById("sRepetir").value = "";
+    toast("¡Contraseña actualizada!");
+  } catch(e) { toast("Error al cambiar contraseña", true); }
+};
 
-  window.toggleDiaSlot   = function(){};
-  window.toggleTipoDia   = function(){};
-  window.toggleSlot      = function(){};
-
-  // ── FOTOS ─────────────────────────────────────────────────────
-  let fotoBase64  = null;
-  let logoBase64  = null;
-  let qrBase64    = null;
-
-  window.cargarFoto = function(input) {
-    const file = input.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      fotoBase64 = e.target.result;
-      const prev = document.getElementById("fotoPreview");
-      prev.innerHTML = `<img src="${fotoBase64}" alt="foto" />`;
-      document.getElementById("btnQuitarFoto").style.display = "block";
-    };
-    reader.readAsDataURL(file);
-  };
-
-  window.quitarFoto = function() {
-    fotoBase64 = "";
-    const prev = document.getElementById("fotoPreview");
-    prev.innerHTML = `<span id="fotoIniciales">${document.getElementById("cfgIniciales").value || CONFIG.iniciales}</span>`;
-    document.getElementById("btnQuitarFoto").style.display = "none";
-  };
-
-  window.cargarLogo = function(input) {
-    const file = input.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      logoBase64 = e.target.result;
-      const prev = document.getElementById("logoPreview");
-      prev.innerHTML = `<img src="${logoBase64}" alt="logo" />`;
-      document.getElementById("btnQuitarLogo").style.display = "block";
-    };
-    reader.readAsDataURL(file);
-  };
-
-  window.quitarLogo = function() {
-    logoBase64 = "";
-    const prev = document.getElementById("logoPreview");
-    prev.innerHTML = `<span id="logoLetra">${document.getElementById("cfgLogoIcono").value || CONFIG.logoIcono}</span>`;
-    document.getElementById("btnQuitarLogo").style.display = "none";
-  };
-
-  window.cargarQR = function(input) {
-    const file = input.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      qrBase64 = e.target.result;
-      const prev = document.getElementById("qrPreview");
-      prev.innerHTML = `<img src="${qrBase64}" alt="QR" />`;
-      document.getElementById("btnQuitarQR").style.display = "block";
-    };
-    reader.readAsDataURL(file);
-  };
-
-  window.quitarQR = function() {
-    qrBase64 = "";
-    document.getElementById("qrPreview").innerHTML = `<span style="font-size:28px;">📱</span><span>Subir QR</span>`;
-    document.getElementById("btnQuitarQR").style.display = "none";
-  };
-
-  // ── COLORES: sincronizar picker ↔ hex ─────────────────────────
-  document.getElementById("cfgColorPrimario").addEventListener("input", function() {
-    document.getElementById("cfgColorPrimarioHex").value = this.value;
-  });
-  document.getElementById("cfgColorPrimarioHex").addEventListener("input", function() {
-    if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById("cfgColorPrimario").value = this.value;
-  });
-  document.getElementById("cfgColorSecundario").addEventListener("input", function() {
-    document.getElementById("cfgColorSecundarioHex").value = this.value;
-  });
-  document.getElementById("cfgColorSecundarioHex").addEventListener("input", function() {
-    if (/^#[0-9a-fA-F]{6}$/.test(this.value)) document.getElementById("cfgColorSecundario").value = this.value;
-  });
-
-  // ── VARIABLES en mensajes ─────────────────────────────────────
-  window.insertarVariable = function(campoId, variable) {
-    const el = document.getElementById(campoId);
-    const start = el.selectionStart;
-    const end   = el.selectionEnd;
-    el.value = el.value.substring(0, start) + variable + el.value.substring(end);
-    el.selectionStart = el.selectionEnd = start + variable.length;
-    el.focus();
-  };
-  // Hacer que los chips funcionen para todos los campos
-  document.querySelectorAll(".msg-chip").forEach(chip => {
-    chip.addEventListener("click", function() {
-      const focused = document.activeElement;
-      if (focused && focused.tagName === "TEXTAREA") {
-        insertarVariable(focused.id, chip.textContent.split(" ")[0]);
-      }
-    });
-  });
-
-  // ── FORTALEZA DE CONTRASEÑA ───────────────────────────────────
-  window.evaluarPass = function(val) {
-    const bar = document.getElementById("passStrength");
-    if (!val) { bar.className = "pass-strength"; return; }
-    if (val.length < 6) bar.className = "pass-strength debil";
-    else if (val.length < 10 || !/[0-9]/.test(val)) bar.className = "pass-strength media";
-    else bar.className = "pass-strength fuerte";
-  };
-
-  // ── CARGAR DATOS DESDE FIRESTORE ─────────────────────────────
-  async function cargarConfig() {
-    try {
-      const [snapPerfil, snapHorarios, snapPagos, snapMensajes] = await Promise.all([
-        getDoc(doc(db, "configuracion", "perfil")),
-        getDoc(doc(db, "configuracion", "horarios")),
-        getDoc(doc(db, "configuracion", "pagos")),
-        getDoc(doc(db, "configuracion", "mensajes")),
-      ]);
-      const d = {
-        ...(snapPerfil.exists()   ? snapPerfil.data()   : {}),
-        ...(snapHorarios.exists() ? snapHorarios.data() : {}),
-        ...(snapPagos.exists()    ? snapPagos.data()    : {}),
-        ...(snapMensajes.exists() ? snapMensajes.data() : {}),
-      };
-
-      // Mezclar con CONFIG base
-      const datos = Object.assign({
-        nombre: CONFIG.nombre, nombreCorto: CONFIG.nombreCorto,
-        titulo: CONFIG.titulo, especialidad: CONFIG.especialidad,
-        matricula: CONFIG.matricula, iniciales: CONFIG.iniciales,
-        telefono: CONFIG.telefono, whatsapp: CONFIG.whatsapp,
-        email: CONFIG.email, direccion: CONFIG.direccion,
-        nombreApp: CONFIG.nombreApp, logoIcono: CONFIG.logoIcono,
-        cbu: CONFIG.cbu, alias: CONFIG.alias,
-        colorPrimario: CONFIG.colorPrimario, colorSecundario: CONFIG.colorSecundario,
-        diasChat: CONFIG.diasChat || 10
-      }, d);
-
-      // Rellenar campos
-      document.getElementById("cfgNombre").value        = datos.nombre || "";
-      document.getElementById("cfgNombreCorto").value   = datos.nombreCorto || "";
-      document.getElementById("cfgTitulo").value        = datos.titulo || "";
-      document.getElementById("cfgEspecialidad").value  = datos.especialidad || "";
-      document.getElementById("cfgMatricula").value     = datos.matricula || "";
-      document.getElementById("cfgIniciales").value     = datos.iniciales || "";
-      document.getElementById("cfgNombreApp").value     = datos.nombreApp || "";
-      document.getElementById("cfgDireccion").value     = datos.direccion || "";
-      document.getElementById("cfgTelefono").value      = datos.telefono || "";
-      document.getElementById("cfgWhatsapp").value      = datos.whatsapp || "";
-      document.getElementById("cfgEmail").value         = datos.email || "";
-      document.getElementById("cfgCbu").value           = datos.cbu || "";
-      document.getElementById("cfgAlias").value         = datos.alias || "";
-      document.getElementById("cfgPrecioConsulta").value = datos.precioConsulta || "";
-      document.getElementById("cfgLogoIcono").value     = datos.logoIcono || "";
-      document.getElementById("cfgDiasChat").value      = datos.diasChat || 10;
-
-      // Colores
-      const cp = datos.colorPrimario || "#667eea";
-      const cs = datos.colorSecundario || "#764ba2";
-      document.getElementById("cfgColorPrimario").value    = cp;
-      document.getElementById("cfgColorPrimarioHex").value = cp;
-      document.getElementById("cfgColorSecundario").value    = cs;
-      document.getElementById("cfgColorSecundarioHex").value = cs;
-
-      // Mensajes
-      document.getElementById("cfgMsgConfirmado").value    = datos.msgConfirmado    || `Hola {nombre}! Tu turno con la {dra} está confirmado para el {fecha} a las {hora}. Consultorio: {direccion}. ¡Nos vemos! 🩺`;
-      document.getElementById("cfgMsgRecordatorio").value  = datos.msgRecordatorio  || `Hola {nombre}! Te recordamos que mañana tenés turno con la {dra} a las {hora}. Consultorio: {direccion}. Si no podés asistir, avisanos con anticipación.`;
-      document.getElementById("cfgMsgTeleconsulta").value  = datos.msgTeleconsulta  || `Hola! Le escribo de parte de la {dra}. En unos minutos iniciamos la teleconsulta por videollamada de WhatsApp.`;
-      document.getElementById("cfgMsgCancelado").value     = datos.msgCancelado     || `Hola {nombre}, te informamos que tu turno del {fecha} a las {hora} fue cancelado. Podés sacar un nuevo turno desde la app.`;
-
-      // Fotos
-      if (datos.fotoBase64) {
-        fotoBase64 = datos.fotoBase64;
-        document.getElementById("fotoPreview").innerHTML = `<img src="${fotoBase64}" alt="foto" />`;
-        document.getElementById("btnQuitarFoto").style.display = "block";
-      } else {
-        document.getElementById("fotoPreview").innerHTML = `<span id="fotoIniciales">${datos.iniciales || "FR"}</span>`;
-      }
-      if (datos.logoBase64) {
-        logoBase64 = datos.logoBase64;
-        document.getElementById("logoPreview").innerHTML = `<img src="${logoBase64}" alt="logo" />`;
-        document.getElementById("btnQuitarLogo").style.display = "block";
-      } else {
-        document.getElementById("logoPreview").innerHTML = `<span id="logoLetra">${datos.logoIcono || "P"}</span>`;
-      }
-      if (datos.qrBase64) {
-        qrBase64 = datos.qrBase64;
-        document.getElementById("qrPreview").innerHTML = `<img src="${qrBase64}" alt="QR" />`;
-        document.getElementById("btnQuitarQR").style.display = "block";
-      }
-
-      // Duracion turno
-      if (datos.duracionTurno) document.getElementById("cfgDuracionTurno").value = datos.duracionTurno;
-
-      // Horarios — cargar desde snapHorarios directamente
-      renderDias(snapHorarios.exists() ? snapHorarios.data() : {});
-
-      // Usuario
-      const snapAcceso = await getDoc(doc(db, "configuracion", "acceso"));
-      if (snapAcceso.exists()) {
-        document.getElementById("cfgUsuario").value = snapAcceso.data().usuario || "dra.ranalli";
-      } else {
-        document.getElementById("cfgUsuario").value = "dra.ranalli";
-      }
-
-    } catch (e) {
-      console.error(e);
-      renderDias({});
-      toast("Error al cargar configuración", "error");
-    }
-  }
-
-  // ── GUARDAR SECCIONES ─────────────────────────────────────────
-  window.guardarSeccion = async function(seccion) {
-    const btn = event.target;
-    btn.classList.add("guardando");
-    btn.textContent = "⏳ Guardando...";
-
-    try {
-      if (seccion === "perfil") {
-        const datos = {
-          colorPrimario:    document.getElementById("cfgColorPrimarioHex").value || document.getElementById("cfgColorPrimario").value,
-          colorSecundario:  document.getElementById("cfgColorSecundarioHex").value || document.getElementById("cfgColorSecundario").value,
-          logoIcono:        document.getElementById("cfgLogoIcono").value,
-        };
-        if (fotoBase64 !== null) datos.fotoBase64 = fotoBase64;
-        if (logoBase64 !== null) datos.logoBase64 = logoBase64;
-        await setDoc(doc(db, "configuracion", "perfil"), datos, { merge: true });
-
-      } else if (seccion === "datos") {
-        await setDoc(doc(db, "configuracion", "perfil"), {
-          nombre:       document.getElementById("cfgNombre").value.trim(),
-          nombreCorto:  document.getElementById("cfgNombreCorto").value.trim(),
-          titulo:       document.getElementById("cfgTitulo").value.trim(),
-          especialidad: document.getElementById("cfgEspecialidad").value.trim(),
-          matricula:    document.getElementById("cfgMatricula").value.trim(),
-          iniciales:    document.getElementById("cfgIniciales").value.trim().toUpperCase(),
-          nombreApp:    document.getElementById("cfgNombreApp").value.trim(),
-          direccion:    document.getElementById("cfgDireccion").value.trim(),
-          telefono:     document.getElementById("cfgTelefono").value.trim(),
-          whatsapp:     document.getElementById("cfgWhatsapp").value.trim(),
-          email:        document.getElementById("cfgEmail").value.trim(),
-        }, { merge: true });
-
-      } else if (seccion === "horarios") {
-        const diasData = {};
-        DIAS_INFO.forEach(d => {
-          const st = estadoDias[d.num];
-          diasData[String(d.num)] = {
-            activo: st.activo,
-            presencial:   { activo: st.presencial.activo,   slots: [...st.presencial.slots]   },
-            telemedicina: { activo: st.telemedicina.activo, slots: [...st.telemedicina.slots] }
-          };
-        });
-        await setDoc(doc(db, "configuracion", "horarios"), { dias: diasData }, { merge: true });
-
-      } else if (seccion === "pagos") {
-        const datos = {
-          cbu:            document.getElementById("cfgCbu").value.trim(),
-          alias:          document.getElementById("cfgAlias").value.trim(),
-          precioConsulta: Number(document.getElementById("cfgPrecioConsulta").value) || 0,
-        };
-        if (qrBase64 !== null) datos.qrBase64 = qrBase64;
-        await setDoc(doc(db, "configuracion", "pagos"), datos, { merge: true });
-
-      } else if (seccion === "firma") {
-        if (firmaBase64 !== null) {
-          await setDoc(doc(db, "configuracion", "firma"), { firmaBase64 }, { merge: true });
-        }
-
-      } else if (seccion === "mensajes") {
-        await setDoc(doc(db, "configuracion", "mensajes"), {
-          msgConfirmado:   document.getElementById("cfgMsgConfirmado").value.trim(),
-          msgRecordatorio: document.getElementById("cfgMsgRecordatorio").value.trim(),
-          msgTeleconsulta: document.getElementById("cfgMsgTeleconsulta").value.trim(),
-          msgCancelado:    document.getElementById("cfgMsgCancelado").value.trim(),
-          diasChat:        Number(document.getElementById("cfgDiasChat").value) || 10,
-        }, { merge: true });
-      }
-
-      toast("¡Guardado correctamente!");
-    } catch (e) {
-      console.error(e);
-      toast("Error al guardar. Revisá la conexión.", "error");
-    }
-
-    btn.classList.remove("guardando");
-    btn.textContent = "💾 Guardar" + (seccion === "perfil" ? " foto y colores" : seccion === "datos" ? " datos" : seccion === "horarios" ? " horarios" : seccion === "pagos" ? " datos de cobro" : " mensajes");
-  };
-
-  // ── CAMBIAR CONTRASEÑA ────────────────────────────────────────
-  window.cambiarPassword = async function() {
-    const usuario   = document.getElementById("cfgUsuario").value.trim();
-    const actual    = document.getElementById("cfgPassActual").value;
-    const nueva     = document.getElementById("cfgPassNueva").value;
-    const repetir   = document.getElementById("cfgPassRepetir").value;
-
-    if (!usuario)  { toast("Ingresá un nombre de usuario", "error"); return; }
-    if (!actual)   { toast("Ingresá tu contraseña actual", "error"); return; }
-    if (!nueva)    { toast("Ingresá la nueva contraseña", "error"); return; }
-    if (nueva.length < 6) { toast("La contraseña debe tener al menos 6 caracteres", "error"); return; }
-    if (nueva !== repetir) { toast("Las contraseñas no coinciden", "error"); return; }
-
-    try {
-      const snap = await getDoc(doc(db, "configuracion", "acceso"));
-      const passActualGuardada = snap.exists() ? snap.data().password : "VeroGuerra";
-      const usuarioGuardado    = snap.exists() ? snap.data().usuario  : "dra.ranalli";
-
-      if (actual !== passActualGuardada) {
-        toast("La contraseña actual es incorrecta", "error");
-        return;
-      }
-
-      await setDoc(doc(db, "configuracion", "acceso"), {
-        usuario: usuario,
-        password: nueva,
-        actualizadoEn: new Date().toISOString()
-      });
-
-      document.getElementById("cfgPassActual").value  = "";
-      document.getElementById("cfgPassNueva").value   = "";
-      document.getElementById("cfgPassRepetir").value = "";
-      document.getElementById("passStrength").className = "pass-strength";
-      toast("¡Contraseña actualizada correctamente!");
-    } catch (e) {
-      console.error(e);
-      toast("Error al cambiar contraseña", "error");
-    }
-  };
-
-
-  // ── FIRMA ─────────────────────────────────────────────────────
-  let firmaBase64 = null;
-
-  window.cargarFirmaImg = function(input) {
-    const file = input.files[0]; if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      firmaBase64 = e.target.result;
-      const prev = document.getElementById("firmaPreview");
-      prev.innerHTML = `<img src="${firmaBase64}" style="max-width:100%;max-height:100%;object-fit:contain;padding:8px;" />`;
-      document.getElementById("btnQuitarFirma").style.display = "block";
-      document.getElementById("canvasFirmaWrap").style.display = "none";
-    };
-    reader.readAsDataURL(file);
-  };
-
-  window.quitarFirma = function() {
-    firmaBase64 = "";
-    document.getElementById("firmaPreview").innerHTML = `<span id="firmaPlaceholder" style="font-size:13px;color:#a0aec0;text-align:center;">📝 Sin firma cargada<br><span style="font-size:11px;">Subí una imagen o dibujá abajo</span></span>`;
-    document.getElementById("btnQuitarFirma").style.display = "none";
-  };
-
-  window.mostrarCanvas = function() {
-    const wrap = document.getElementById("canvasFirmaWrap");
-    wrap.style.display = wrap.style.display === "none" ? "block" : "none";
-    if (wrap.style.display === "block") iniciarCanvas();
-  };
-
-  window.limpiarCanvas = function() {
-    const canvas = document.getElementById("canvasFirma");
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  };
-
-  function iniciarCanvas() {
-    const canvas = document.getElementById("canvasFirma");
-    const ctx = canvas.getContext("2d");
-    let dibujando = false;
-    ctx.strokeStyle = "#1a202c";
-    ctx.lineWidth = 2;
-    ctx.lineCap = "round";
-
-    const pos = (e) => {
-      const r = canvas.getBoundingClientRect();
-      const scaleX = canvas.width / r.width;
-      const scaleY = canvas.height / r.height;
-      const src = e.touches ? e.touches[0] : e;
-      return { x: (src.clientX - r.left) * scaleX, y: (src.clientY - r.top) * scaleY };
-    };
-
-    canvas.onmousedown  = canvas.ontouchstart = e => { e.preventDefault(); dibujando = true; const p = pos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); };
-    canvas.onmousemove  = canvas.ontouchmove  = e => { e.preventDefault(); if (!dibujando) return; const p = pos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); };
-    canvas.onmouseup    = canvas.ontouchend   = () => { dibujando = false; };
-    canvas.onmouseleave = () => { dibujando = false; };
-  }
-
-  window.guardarDesdeCanvas = function() {
-    const canvas = document.getElementById("canvasFirma");
-    firmaBase64 = canvas.toDataURL("image/png");
-    const prev = document.getElementById("firmaPreview");
-    prev.innerHTML = `<img src="${firmaBase64}" style="max-width:100%;max-height:100%;object-fit:contain;padding:8px;" />`;
-    document.getElementById("btnQuitarFirma").style.display = "block";
-    document.getElementById("canvasFirmaWrap").style.display = "none";
-    toast("Firma guardada. Hacé clic en 'Guardar firma' para confirmar.");
-  };
-
-  // Cargar firma existente
-  async function cargarFirma() {
-    try {
-      const snap = await getDoc(doc(db, "configuracion", "firma"));
-      if (snap.exists() && snap.data().firmaBase64) {
-        firmaBase64 = snap.data().firmaBase64;
-        document.getElementById("firmaPreview").innerHTML = `<img src="${firmaBase64}" style="max-width:100%;max-height:100%;object-fit:contain;padding:8px;" />`;
-        document.getElementById("btnQuitarFirma").style.display = "block";
-      }
-    } catch(e) { console.warn(e); }
-  }
-
-  // ── INICIAR ───────────────────────────────────────────────────
-  // Esperar a que el DOM esté completamente listo
-  document.addEventListener("DOMContentLoaded", () => {
-    buildDiasUI();
-  });
-  // También llamar directo por si DOMContentLoaded ya pasó (módulos se cargan tarde)
-  if (document.readyState === "complete" || document.readyState === "interactive") {
-    buildDiasUI();
-  }
-  cargarConfig();
-  cargarFirma();
+// ── ARRANCAR ───────────────────────────────────────
+renderDias();
+cargar();
 </script>
-
 </body>
 </html>
