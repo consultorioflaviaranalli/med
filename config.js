@@ -3,54 +3,52 @@
 // Editá solo este archivo para personalizar
 // la app para cada profesional.
 // ============================================
-
 const CONFIG = {
 
   // --- DATOS DEL PROFESIONAL ---
-  nombre: "Guerra Verónica",
-  nombreCorto: "Dra. Guerra",
+  nombre: "Ranalli Flavia",
+  nombreCorto: "Dra. Ranalli",
   titulo: "Dra.",
   especialidad: "Pediatría",
-  matricula: "MP 00000",
-  iniciales: "VG",
+  matricula: "",
+  iniciales: "FR",
 
   // --- CONTACTO ---
-  telefono: "1100000000",       // Sin espacios ni guiones, con código de área
-  whatsapp: "5491100000000",    // Con código de país (549 = Argentina)
-  email: "dra.guerra@pedimed.com",
+  telefono: "1160366183",
+  whatsapp: "5491160366183",
+  email: "flaviaranalli.pediatra@gmail.com",
 
   // --- CONSULTORIO ---
-  direccion: "Av. Ejemplo 1234, CABA",
+  direccion: "",
   nombreApp: "PediMed",
-  logoIcono: "P",               // Letra que aparece en el círculo del logo
+  logoIcono: "P",
 
   // --- COBRO ---
-  cbu: "0000000000000000000000",
-  alias: "ALIAS.COBRO",
-  qr: "",                       // Nombre del archivo QR (ej: "qr-guerra.png")
+  cbu: "",
+  alias: "",
+  qr: "",
 
   // --- COLORES ---
   colorPrimario: "#667eea",
   colorSecundario: "#764ba2",
 
   // --- PACIENTES ---
-  tipoPaciente: "pediátrico",   // "pediátrico" o "adulto"
-  mostrarTutor: true,           // true para pediatría, false para adultos
+  tipoPaciente: "pediátrico",
+  mostrarTutor: true,
 
   // --- TELECONSULTA ---
-  mensajeTeleconsulta: "Hola! Le escribo de parte de la " + "Dra. Guerra Verónica" + ". En unos minutos iniciamos la teleconsulta por videollamada de WhatsApp.",
+  mensajeTeleconsulta: "Hola! Le escribo de parte de la Dra. Ranalli Flavia. En unos minutos iniciamos la teleconsulta por videollamada de WhatsApp.",
 
   // --- CHAT SEGUIMIENTO ---
-  diasChat: 10,                 // Días que el chat está habilitado después de la consulta
+  diasChat: 10,
 
   // --- FIREBASE ---
   firebase: {
-    apiKey: "AIzaSyAxr6HVePo0BeLyV7-QuH668OpZqVOrm2s",
-    authDomain: "consultorio-pediatrico-30cc2.firebaseapp.com",
-    projectId: "consultorio-pediatrico-30cc2",
-    storageBucket: "consultorio-pediatrico-30cc2.firebasestorage.app",
-    messagingSenderId: "806158143244",
-    appId: "1:806158143244:web:315f13af8d5dc41c0cc329"
+    apiKey: "AIzaSyAwXdUp9yxI8zFDWqStJYBilS2sZto4L9E",
+    authDomain: "consultorio-ranalli.firebaseapp.com",
+    projectId: "consultorio-ranalli",
+    storageBucket: "consultorio-ranalli.firebasestorage.app",
+    messagingSenderId: "645147245710",
+    appId: "1:645147245710:web:d51424609ac04be706dddf"
   }
-
 };
